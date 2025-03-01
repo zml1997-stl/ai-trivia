@@ -90,7 +90,7 @@ def game(game_id):
 
 def get_trivia_question(topic):
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel('models/gemini-2.0-flash')
         prompt = f"""
         Create a challenging trivia question about {topic}. 
         Return your response in the following JSON format:
