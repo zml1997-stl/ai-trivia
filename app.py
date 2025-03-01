@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import os
 import uuid
-import google.generativeai as genai
+import google.generativeai as genai  # Updated import
 from dotenv import load_dotenv
 import secrets
 import json
@@ -12,7 +12,7 @@ load_dotenv()
 
 # Configure Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)  # This still works but we'll update the client usage below
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -90,7 +90,9 @@ def game(game_id):
 
 def get_trivia_question(topic):
     try:
-        model = genai.GenerativeModel('models/gemini-2.0-flash')
+        # Using the updated Gemini client approach
+        client = genai.GenerativeModel('gemini-1.5-pro')
+        
         prompt = f"""
         Create a challenging trivia question about {topic}. 
         Return your response in the following JSON format:
@@ -102,9 +104,20 @@ def get_trivia_question(topic):
         The question should be specific and have a clear, unambiguous answer.
         """
         
-        response = model.generate_content(prompt)
-        result = json.loads(response.text)
-        return result
+        response = client.generate_content(prompt)
+        # Parse the response text as JSON
+        try:
+            result = json.loads(response.text)
+            return result
+        except json.JSONDecodeError:
+            # Fallback in case the response is not valid JSON
+            print(f"Invalid JSON response: {response.text}")
+            return {
+                "question": f"What is a notable fact about {topic}?",
+                "answer": "Unable to generate answer",
+                "explanation": "There was an error parsing the AI response."
+            }
+            
     except Exception as e:
         print(f"Error generating question: {str(e)}")
         return {
