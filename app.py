@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import os
 import uuid
-import google.generativeai as genai  # Updated import
+import google.generativeai as genai
 from dotenv import load_dotenv
 import secrets
 import json
@@ -12,7 +12,7 @@ load_dotenv()
 
 # Configure Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)  # This still works but we'll update the client usage below
+genai.configure(api_key=GEMINI_API_KEY)
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -31,7 +31,6 @@ def create_game():
     if not username:
         return redirect(url_for('index'))
     
-    # Create a new game with a unique ID
     game_id = str(uuid.uuid4())[:8]
     games[game_id] = {
         'host': username,
@@ -43,7 +42,6 @@ def create_game():
         'scores': {username: 0}
     }
     
-    # Set session data
     session['game_id'] = game_id
     session['username'] = username
     
@@ -66,12 +64,10 @@ def join_game():
     if len(games[game_id]['players']) >= 10:
         return "Game is full", 403
     
-    # Add player to the game
     if username not in games[game_id]['players']:
         games[game_id]['players'].append(username)
         games[game_id]['scores'][username] = 0
     
-    # Set session data
     session['game_id'] = game_id
     session['username'] = username
     
@@ -90,51 +86,42 @@ def game(game_id):
 
 def get_trivia_question(topic):
     try:
-        # Using the updated Gemini client approach
-        client = genai.GenerativeModel('gemini-2.0-pro-exp-02-05')  # Use 'gemini-pro' - it is better for this task
+        model = genai.GenerativeModel('gemini-2.0-pro-exp-02-05')  # Use 'gemini-pro'
 
         prompt = f"""
-        Create a challenging trivia question about {topic}. 
+        Create a trivia question about {topic}. 
         Return your response in the following JSON format:
         {{
             "question": "The trivia question",
             "answer": "The correct answer",
             "explanation": "A brief explanation of the answer"
         }}
-        The question should be specific and have a clear, unambiguous answer.
+        The question should be specific and have a clear, unambiguous answer.  Do NOT include any other text besides the JSON.
         """
 
-        response = client.generate_content(prompt)
+        response = model.generate_content(prompt)
 
-        # Parse the response text as JSON *immediately* after getting the response
+        # Parse the response text as JSON *immediately*
         try:
-            result = json.loads(response.text)
-            return result  # Return the parsed JSON object if successful
+            #Clean up response.text
+            cleaned_text = response.text.replace('`json', '').replace('`', '').strip()
+            result = json.loads(cleaned_text)
+            return result
         except json.JSONDecodeError as e:
-            # Handle JSONDecodeError properly
-            print(f"JSONDecodeError: {e}")  # Log the *actual* JSON error
-            print(f"Raw response text: {response.text}") #log the raw text to help debugging.
-            return {  # Fallback with clear error information
-                "question": f"What is a notable fact about {topic}?",
+            print(f"JSONDecodeError: {e}")
+            print(f"Raw response text: {response.text}")
+            return {
+                "question": f"What is a notable fact about {topic}?",  # Fallback question
                 "answer": "Unable to generate answer",
-                "explanation": "There was an error parsing the AI response."
+                "explanation": "There was an error parsing the AI response (JSONDecodeError)."
             }
 
     except Exception as e:
-        # Handle *other* exceptions (e.g., network errors)
         print(f"Error generating question: {str(e)}")
         return {
-            "question": f"What is a notable fact about {topic}?",
+            "question": f"What is a notable fact about {topic}?",  # Fallback question
             "answer": "Unable to generate answer",
-            "explanation": "There was an error with the AI service."
-        }
-            
-    except Exception as e:
-        print(f"Error generating question: {str(e)}")
-        return {
-            "question": f"What is a notable fact about {topic}?",
-            "answer": "Unable to generate answer",
-            "explanation": "There was an error with the AI service."
+            "explanation": "There was an error with the AI service (General Exception)."
         }
 
 @socketio.on('connect')
@@ -176,7 +163,6 @@ def handle_select_topic(data):
         games[game_id]['status'] == 'in_progress' and
         games[game_id]['players'][games[game_id]['current_player_index']] == username):
         
-        # Generate a question using the Gemini API
         question_data = get_trivia_question(topic)
         games[game_id]['current_question'] = question_data
         games[game_id]['answers'] = {}
@@ -197,29 +183,21 @@ def handle_submit_answer(data):
         games[game_id]['status'] == 'in_progress' and
         games[game_id]['current_question']):
         
-        # Store the player's answer
         games[game_id]['answers'][username] = answer
-        
-        # Notify all players that someone has answered
         emit('player_answered', {'username': username}, to=game_id)
         
-        # Check if all players have answered
         if len(games[game_id]['answers']) == len(games[game_id]['players']):
-            # Determine correct answers
             correct_answer = games[game_id]['current_question']['answer']
             correct_players = []
             
             for player, player_answer in games[game_id]['answers'].items():
-                # Simple string comparison - in a real app, you might want more sophisticated matching
                 if player_answer.lower().strip() == correct_answer.lower().strip():
                     correct_players.append(player)
                     games[game_id]['scores'][player] += 1
             
-            # Move to the next player for the next round
             games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
             next_player = games[game_id]['players'][games[game_id]['current_player_index']]
             
-            # Send results to all players
             emit('round_results', {
                 'correct_answer': correct_answer,
                 'explanation': games[game_id]['current_question']['explanation'],
@@ -243,11 +221,10 @@ def handle_disconnect():
                 
                 emit('player_left', {'username': player, 'players': game['players']}, to=game_id)
                 
-                # If no players left, remove the game
                 if not game['players']:
                     del games[game_id]
                     break
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host='0.0.0.0', port=port)
+    socketio.run(app, host='0.0.0.0', port=port, debug=True) # Added debug=True for easier troubleshooting
