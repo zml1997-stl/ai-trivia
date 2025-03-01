@@ -91,7 +91,7 @@ def game(game_id):
 def get_trivia_question(topic):
     try:
         # Using the updated Gemini client approach
-        client = genai.GenerativeModel('gemini-1.5-pro')
+        client = genai.GenerativeModel('gemini-2.0-flash')
         
         prompt = f"""
         Create a challenging trivia question about {topic}. 
