@@ -1,4 +1,4 @@
-boy {
+body {
     background-color: #f8f9fa;
     padding-bottom: 2rem;
 }
@@ -56,48 +56,6 @@ boy {
     margin: 1rem auto;
 }
 
-/* Timer styling */
-.timer-container {
-    margin: 15px 0;
-    text-align: center;
-}
-
-.timer-display {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #dc3545;
-    margin-bottom: 10px;
-}
-
-.timer-progress {
-    height: 10px;
-    border-radius: 5px;
-    background-color: #f8f9fa;
-    margin-bottom: 10px;
-}
-
-.timer-bar {
-    height: 100%;
-    border-radius: 5px;
-    background-color: #dc3545;
-    transition: width 1s linear;
-}
-
-.rounds-display {
-    text-align: center;
-    margin-bottom: 15px;
-    font-weight: bold;
-}
-
-/* Leave game button */
-.leave-game-btn {
-    position: fixed;
-    bottom: 20px; /* Adjust this value for the spacing from the bottom */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-}
-
 /* Responsive adjustments */
 @media (max-width: 576px) {
     .badge {
@@ -107,10 +65,5 @@ boy {
     
     #question-text {
         font-size: 1.3rem;
-    }
-    
-    .leave-game-btn {
-        font-size: 0.8rem;
-        padding: 5px 10px;
     }
 }
