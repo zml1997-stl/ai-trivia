@@ -194,24 +194,26 @@ def handle_select_topic(data):
     game_id = data.get('game_id')
     username = data.get('username')
     topic = data.get('topic')
-    
+
     if (game_id in games and 
         username in games[game_id]['players'] and 
         games[game_id]['status'] == 'in_progress' and
         games[game_id]['players'][games[game_id]['current_player_index']] == username):
-        
-        # Ensure the game has a list to track asked questions
+
+        # Ensure the game has a set to track asked questions and answers
         if 'questions_asked' not in games[game_id]:
             games[game_id]['questions_asked'] = set()
 
-        # Attempt to generate a unique question
-        max_attempts = 5  # Avoid infinite loops if the AI generates many duplicates
+        max_attempts = 5  # Limit retries to avoid infinite loops
+
         for _ in range(max_attempts):
             question_data = get_trivia_question(topic)
             question_text = question_data['question']
-            
-            if question_text not in games[game_id]['questions_asked']:
-                games[game_id]['questions_asked'].add(question_text)
+            answer_text = question_data['answer']
+
+            # Check if either the question or the answer has already been used
+            if (question_text, answer_text) not in games[game_id]['questions_asked']:
+                games[game_id]['questions_asked'].add((question_text, answer_text))
                 games[game_id]['current_question'] = question_data
                 games[game_id]['answers'] = {}
 
@@ -219,10 +221,10 @@ def handle_select_topic(data):
                     'question': question_data['question'],
                     'topic': topic
                 }, to=game_id)
-                return  # Exit after successfully selecting a unique question
+                return  # Stop retrying if a unique question-answer pair is found
 
-        # If a unique question couldn't be found, notify players
-        emit('error', {'message': "Couldn't generate a unique question. Please try a different topic."}, to=game_id)
+        # If all attempts result in duplicates, notify the players
+        emit('error', {'message': "Couldn't generate a unique question. Try another topic."}, to=game_id)
 
 @socketio.on('submit_answer')
 def handle_submit_answer(data):
