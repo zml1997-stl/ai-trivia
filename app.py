@@ -352,13 +352,8 @@ def process_round_results(game_id):
             correct_players.append(player)
             games[game_id]['scores'][player] += 1
     
-    # Update to the next player's turn
-    games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
-    next_player = games[game_id]['players'][games[game_id]['current_player_index']]
-    
-    # Check if we've completed a full round (all players have had a turn)
-    if games[game_id]['current_player_index'] == 0:
-        games[game_id]['round_number'] += 1
+    # Only increment the round number here.
+    games[game_id]['round_number'] += 1
     
     # Check if the game is over (15 rounds)
     game_over = games[game_id]['round_number'] > games[game_id]['total_rounds']
@@ -376,6 +371,10 @@ def process_round_results(game_id):
         # Update game status
         games[game_id]['status'] = 'completed'
     else:
+        # Update to the next player's turn
+        games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
+        next_player = games[game_id]['players'][games[game_id]['current_player_index']]
+        
         socketio.emit('round_results', {
             'correct_answer': correct_answer,
             'explanation': games[game_id]['current_question']['explanation'],
@@ -387,7 +386,6 @@ def process_round_results(game_id):
             'total_rounds': games[game_id]['total_rounds'],
             'game_over': game_over
         }, to=game_id)
-
 @socketio.on('submit_answer')
 def handle_submit_answer(data):
     game_id = data.get('game_id')
