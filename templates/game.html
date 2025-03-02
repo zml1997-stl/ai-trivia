@@ -47,8 +47,10 @@
                             <div class="mb-3">
                                 <input type="text" id="topic-input" class="form-control form-control-lg" placeholder="Enter a topic (e.g., Science, History, Movies)">
                             </div>
-                            <button id="submit-topic-btn" class="btn btn-primary btn-lg">Submit Topic</button>
-                            <button id="random-topic-btn" class="btn btn-secondary btn-lg mt-2">Choose Random Topic</button>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <button id="submit-topic-btn" class="btn btn-primary btn-lg">Submit Topic</button>
+                                <button id="random-topic-btn" class="btn btn-secondary btn-lg">Random Topic</button>
+                            </div>
                         </div>
                         
                         <!-- Question Display -->
@@ -56,7 +58,9 @@
                             <div class="text-center mb-4">
                                 <span class="badge bg-secondary mb-2">Topic: <span id="topic-display"></span></span>
                                 <h3 id="question-text" class="mb-3"></h3>
-                                <div id="timer" class="badge bg-danger mb-3">Time left: 30 seconds</div>
+                                <div class="progress mb-3">
+                                    <div id="timer-progress" class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
+                                </div>
                             </div>
                             
                             <div class="answer-section">
@@ -134,7 +138,7 @@
     </div>
 
     <!-- Leave Game Button -->
-    <div class="leave-game-container">
+    <div id="leave-game-container" class="fixed-bottom text-center mb-3" style="display: none;">
         <button id="leave-game-btn" class="btn btn-danger btn-lg">Leave Game</button>
     </div>
     
@@ -147,6 +151,7 @@
         let socket;
         let answeredPlayers = new Set();
         let timerInterval;
+        let timeLeft = 30;
         
         // DOM elements
         const waitingLobby = document.getElementById('waiting-lobby');
@@ -154,8 +159,8 @@
         const questionDisplay = document.getElementById('question-display');
         const resultsDisplay = document.getElementById('results-display');
         const scoreboard = document.getElementById('scoreboard');
-        const timerDisplay = document.getElementById('timer');
-        const leaveGameBtn = document.getElementById('leave-game-btn');
+        const leaveGameContainer = document.getElementById('leave-game-container');
+        const timerProgress = document.getElementById('timer-progress');
         
         // Connect to Socket.IO
         document.addEventListener('DOMContentLoaded', function() {
@@ -196,10 +201,6 @@
             
             socket.on('round_results', function(data) {
                 showResults(data);
-            });
-
-            socket.on('random_topic_selected', function(data) {
-                document.getElementById('topic-input').value = data.topic;
             });
         }
         
@@ -242,10 +243,10 @@
 
             // Random topic button
             document.getElementById('random-topic-btn').addEventListener('click', function() {
-                socket.emit('request_random_topic', {
-                    game_id: gameId,
-                    username: username
-                });
+                const randomTopics = ['Science', 'History', 'Movies', 'Geography', 'Sports', 'Music', 'Technology', 'Art', 'Literature', 'Pop Culture'];
+                const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
+                document.getElementById('topic-input').value = randomTopic;
+                document.getElementById('submit-topic-btn').click();
             });
             
             // Submit answer button
@@ -268,11 +269,7 @@
             });
 
             // Leave game button
-            leaveGameBtn.addEventListener('click', function() {
-                socket.emit('leave_game', {
-                    game_id: gameId,
-                    username: username
-                });
+            document.getElementById('leave-game-btn').addEventListener('click', function() {
                 window.location.href = '/';
             });
         }
@@ -299,8 +296,9 @@
             // Hide waiting lobby
             waitingLobby.style.display = 'none';
             
-            // Show scoreboard
+            // Show scoreboard and leave game button
             scoreboard.style.display = 'block';
+            leaveGameContainer.style.display = 'block';
             updateScoreboard(data.scores);
             
             // Check if it's your turn to select a topic
@@ -343,21 +341,24 @@
             answeredPlayers.clear();
             document.getElementById('answered-players').innerHTML = '';
             document.getElementById('answer-progress').style.width = '0%';
-
-            // Start the timer
-            const timerEnd = new Date(data.timer_end);
-            startTimer(timerEnd);
+            
+            // Start timer
+            startTimer();
         }
-
-        function startTimer(timerEnd) {
+        
+        function startTimer() {
+            timeLeft = 30;
+            timerProgress.style.width = '100%';
             clearInterval(timerInterval);
+            
             timerInterval = setInterval(() => {
-                const now = new Date();
-                const timeLeft = Math.max(0, Math.floor((timerEnd - now) / 1000));
-                timerDisplay.textContent = `Time left: ${timeLeft} seconds`;
-
-                if (timeLeft === 0) {
+                timeLeft--;
+                timerProgress.style.width = `${(timeLeft / 30) * 100}%`;
+                
+                if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    // Automatically submit empty answer if time runs out
+                    document.getElementById('submit-answer-btn').click();
                 }
             }, 1000);
         }
@@ -409,7 +410,7 @@
                     li.className += ' fw-bold';
                 }
                 
-                li.innerHTML = `<span>${player}:</span> <span>${answer}</span>`;
+                li.innerHTML = `<span>${player}:</span> <span>${answer || 'No answer submitted'}</span>`;
                 playerAnswersList.appendChild(li);
             });
             
