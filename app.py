@@ -10,6 +10,7 @@ import re
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import string
 import random
+import re
 
 def generate_game_id():
     # Loop to avoid collisions in the unlikely event the ID already exists.
@@ -189,6 +190,11 @@ def handle_start_game(data):
             'scores': games[game_id]['scores']
         }, to=game_id)
 
+# Helper function to normalize the answer
+def normalize_answer(answer):
+    return re.sub(r'\s+', ' ', answer.strip().lower())
+
+# Check for previously asked questions and answers in a more detailed way
 @socketio.on('select_topic')
 def handle_select_topic(data):
     game_id = data.get('game_id')
@@ -202,7 +208,7 @@ def handle_select_topic(data):
 
         # Ensure the game has a set to track asked questions and answers
         if 'questions_asked' not in games[game_id]:
-            games[game_id]['questions_asked'] = set()
+            games[game_id]['questions_asked'] = []
 
         max_attempts = 5  # Limit retries to avoid infinite loops
 
@@ -211,9 +217,20 @@ def handle_select_topic(data):
             question_text = question_data['question']
             answer_text = question_data['answer']
 
-            # Check if either the question or the answer has already been used
-            if (question_text, answer_text) not in games[game_id]['questions_asked']:
-                games[game_id]['questions_asked'].add((question_text, answer_text))
+            normalized_answer = normalize_answer(answer_text)
+
+            # Check for duplicates using normalized answer and question content
+            duplicate_found = False
+            for prev_question, prev_answer in games[game_id]['questions_asked']:
+                normalized_prev_answer = normalize_answer(prev_answer)
+
+                # If both the question and answer are similar, skip this question
+                if normalized_answer == normalized_prev_answer or question_text == prev_question:
+                    duplicate_found = True
+                    break
+
+            if not duplicate_found:
+                games[game_id]['questions_asked'].append((question_text, answer_text))
                 games[game_id]['current_question'] = question_data
                 games[game_id]['answers'] = {}
 
