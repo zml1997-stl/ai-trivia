@@ -352,9 +352,9 @@ def process_round_results(game_id):
             correct_players.append(player)
             games[game_id]['scores'][player] += 1
     
-    # Check if the round should continue to the next player
-    games[game_id]['round_number'] += 1  # Increment round number only after processing results
-
+    # Increment round counter
+    games[game_id]['round_number'] += 1
+    
     # Check if the game is over (15 rounds)
     game_over = games[game_id]['round_number'] > games[game_id]['total_rounds']
     
@@ -371,7 +371,7 @@ def process_round_results(game_id):
         # Update game status
         games[game_id]['status'] = 'completed'
     else:
-        # Ensure the next player is selected correctly
+        # Update to the next player's turn
         games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
         next_player = games[game_id]['players'][games[game_id]['current_player_index']]
         
