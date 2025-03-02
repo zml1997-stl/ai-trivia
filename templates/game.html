@@ -348,32 +348,61 @@
                 playerList.appendChild(li);
             });
         }
+
+        // Function to request a random funny fact from the backend
+function requestFunnyFact() {
+    socket.emit('request_funny_fact', { game_id: gameId });
+}
+
+// Listen for the response from the backend
+socket.on('receive_funny_fact', function(data) {
+    const fact = data.fact;
+    const waitingDiv = document.getElementById('waiting-for-topic');
+    if (waitingDiv) {
+        // Update the waiting div with the new fact
+        const factElement = waitingDiv.querySelector('.fun-fact');
+        if (factElement) {
+            factElement.textContent = `Fun Fact: ${fact}`;
+        } else {
+            // If the fact element doesn't exist, create it
+            const newFactElement = document.createElement('p');
+            newFactElement.className = 'mt-3 text-muted fun-fact';
+            newFactElement.textContent = `Fun Fact: ${fact}`;
+            waitingDiv.appendChild(newFactElement);
+        }
+    }
+});   
         
         function startGame(data) {
-            // Hide waiting lobby
-            waitingLobby.style.display = 'none';
-            
-            // Show scoreboard and leave game button
-            scoreboard.style.display = 'block';
-            leaveGameContainer.style.display = 'block';
-            updateScoreboard(data.scores);
-            
-            // Check if it's your turn to select a topic
-            if (data.current_player === username) {
-                topicSelection.style.display = 'block';
-            } else {
-                const waitingDiv = document.createElement('div');
-                waitingDiv.id = 'waiting-for-topic';
-                waitingDiv.className = 'text-center my-5';
-                waitingDiv.innerHTML = `
-                    <h3>Waiting for ${data.current_player} to select a topic...</h3>
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                `;
-                document.querySelector('.card-body').appendChild(waitingDiv);
-            }
-        }
+    // Hide waiting lobby
+    waitingLobby.style.display = 'none';
+    
+    // Show scoreboard and leave game button
+    scoreboard.style.display = 'block';
+    leaveGameContainer.style.display = 'block';
+    updateScoreboard(data.scores);
+    
+    // Check if it's your turn to select a topic
+    if (data.current_player === username) {
+        topicSelection.style.display = 'block';
+    } else {
+        const waitingDiv = document.createElement('div');
+        waitingDiv.id = 'waiting-for-topic';
+        waitingDiv.className = 'text-center my-5';
+        
+        waitingDiv.innerHTML = `
+            <h3>Waiting for ${data.current_player} to select a topic...</h3>
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted fun-fact">Loading fun fact...</p>
+        `;
+        document.querySelector('.card-body').appendChild(waitingDiv);
+        
+        // Request a random funny fact
+        requestFunnyFact();
+    }
+}
         
         function showQuestion(data) {
             // Clear any loading or waiting elements
@@ -523,37 +552,42 @@
         }
         
         function startNextRoundCountdown(nextPlayer) {
-            let progress = 0;
-            const progressBar = document.getElementById('next-round-progress');
+    let progress = 0;
+    const progressBar = document.getElementById('next-round-progress');
+    
+    const interval = setInterval(() => {
+        progress += 1;
+        progressBar.style.width = progress + '%';
+        
+        if (progress >= 100) {
+            clearInterval(interval);
+            // Reset UI for next round
+            resultsDisplay.style.display = 'none';
+            progressBar.style.width = '0%';
             
-            const interval = setInterval(() => {
-                progress += 1;
-                progressBar.style.width = progress + '%';
+            // Check if it's your turn
+            if (nextPlayer === username) {
+                topicSelection.style.display = 'block';
+            } else {
+                const waitingDiv = document.createElement('div');
+                waitingDiv.id = 'waiting-for-topic';
+                waitingDiv.className = 'text-center my-5';
                 
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    // Reset UI for next round
-                    resultsDisplay.style.display = 'none';
-                    progressBar.style.width = '0%';
-                    
-                    // Check if it's your turn
-                    if (nextPlayer === username) {
-                        topicSelection.style.display = 'block';
-                    } else {
-                        const waitingDiv = document.createElement('div');
-                        waitingDiv.id = 'waiting-for-topic';
-                        waitingDiv.className = 'text-center my-5';
-                        waitingDiv.innerHTML = `
-                            <h3>Waiting for ${nextPlayer} to select a topic...</h3>
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        `;
-                        document.querySelector('.card-body').appendChild(waitingDiv);
-                    }
-                }
-            }, 120); // 15 seconds total countdown (50ms * 100 steps)
+                waitingDiv.innerHTML = `
+                    <h3>Waiting for ${nextPlayer} to select a topic...</h3>
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted fun-fact">Loading fun fact...</p>
+                `;
+                document.querySelector('.card-body').appendChild(waitingDiv);
+                
+                // Request a random funny fact
+                requestFunnyFact();
+            }
         }
+    }, 120); // 15 seconds total countdown (50ms * 100 steps)
+}
     </script>
     <script>
     document.addEventListener("click", function() {
