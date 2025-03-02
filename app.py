@@ -8,7 +8,16 @@ import json
 import difflib
 import re
 from flask_socketio import SocketIO, emit, join_room, leave_room
+import string
+import random
 
+def generate_game_id():
+    # Loop to avoid collisions in the unlikely event the ID already exists.
+    while True:
+        game_id = ''.join(random.choices(string.ascii_uppercase, k=4))
+        if game_id not in games:
+            return game_id
+            
 # Load environment variables
 load_dotenv()
 
@@ -56,11 +65,11 @@ def create_game():
     if not username:
         return redirect(url_for('index'))
     
-    game_id = str(uuid.uuid4())[:8]
+    game_id = generate_game_id()
     games[game_id] = {
         'host': username,
         'players': [username],
-        'disconnected': set(),  # Track disconnected players.
+        'disconnected': set(),
         'status': 'waiting',
         'current_player_index': 0,
         'current_question': None,
