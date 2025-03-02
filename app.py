@@ -11,7 +11,6 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 import string
 import random
 import re
-import time
 
 def generate_game_id():
     # Loop to avoid collisions in the unlikely event the ID already exists.
@@ -33,14 +32,6 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Game state storage
 games = {}
-
-# List of random topics for the random topic feature
-RANDOM_TOPICS = [
-    "Science", "History", "Geography", "Movies", "Music", "Technology", 
-    "Sports", "Art", "Literature", "Food", "Animals", "Space", 
-    "Video Games", "TV Shows", "Famous People", "Inventions", 
-    "World Records", "Natural Wonders", "Ancient Civilizations", "Ocean Life"
-]
 
 # Helper functions for fuzzy matching
 def normalize_text(text):
@@ -84,10 +75,7 @@ def create_game():
         'current_player_index': 0,
         'current_question': None,
         'answers': {},
-        'scores': {username: 0},
-        'round_number': 0,
-        'total_rounds': 15,
-        'question_timer': None
+        'scores': {username: 0}
     }
     
     session['game_id'] = game_id
@@ -120,34 +108,6 @@ def join_game():
     session['username'] = username
     
     return redirect(url_for('game', game_id=game_id))
-
-@app.route('/leave_game')
-def leave_game():
-    game_id = session.get('game_id')
-    username = session.get('username')
-    
-    if game_id and game_id in games and username:
-        # Handle the player leaving
-        if username in games[game_id]['players']:
-            if len(games[game_id]['players']) <= 1 or username == games[game_id]['host']:
-                # If last player or host leaves, end the game
-                games.pop(game_id, None)
-            else:
-                # Remove the player from the game
-                games[game_id]['players'].remove(username)
-                # Handle current player index if needed
-                current_index = games[game_id]['current_player_index']
-                if current_index >= len(games[game_id]['players']):
-                    games[game_id]['current_player_index'] = 0
-                
-                # Notify other players
-                socketio.emit('player_left', {'players': games[game_id]['players']}, to=game_id)
-    
-    # Clear session
-    session.pop('game_id', None)
-    session.pop('username', None)
-    
-    return redirect(url_for('index'))
 
 @app.route('/game/<game_id>')
 def game(game_id):
@@ -222,38 +182,17 @@ def handle_start_game(data):
     
     if game_id in games and username == games[game_id]['host'] and games[game_id]['status'] == 'waiting':
         games[game_id]['status'] = 'in_progress'
-        games[game_id]['round_number'] = 1  # Initialize round counter
         current_player = games[game_id]['players'][games[game_id]['current_player_index']]
         
         emit('game_started', {
             'current_player': current_player,
             'players': games[game_id]['players'],
-            'scores': games[game_id]['scores'],
-            'round_number': games[game_id]['round_number'],
-            'total_rounds': games[game_id]['total_rounds']
+            'scores': games[game_id]['scores']
         }, to=game_id)
 
 # Helper function to normalize the answer
 def normalize_answer(answer):
     return re.sub(r'\s+', ' ', answer.strip().lower())
-
-@socketio.on('select_random_topic')
-def handle_select_random_topic(data):
-    game_id = data.get('game_id')
-    username = data.get('username')
-    
-    if (game_id in games and 
-        username in games[game_id]['players'] and 
-        games[game_id]['status'] == 'in_progress' and
-        games[game_id]['players'][games[game_id]['current_player_index']] == username):
-        
-        random_topic = random.choice(RANDOM_TOPICS)
-        # Use the existing topic selection handler with the random topic
-        handle_select_topic({
-            'game_id': game_id,
-            'username': username,
-            'topic': random_topic
-        })
 
 # Check for previously asked questions and answers in a more detailed way
 @socketio.on('select_topic')
@@ -294,99 +233,16 @@ def handle_select_topic(data):
                 games[game_id]['questions_asked'].append((question_text, answer_text))
                 games[game_id]['current_question'] = question_data
                 games[game_id]['answers'] = {}
-                
-                # Set up the timer for the question
-                games[game_id]['question_timer'] = time.time() + 30  # 30 seconds from now
 
                 emit('question_ready', {
                     'question': question_data['question'],
-                    'topic': topic,
-                    'timer_duration': 30  # Send the timer duration to the client
+                    'topic': topic
                 }, to=game_id)
-                
-                # Start the countdown timer on the server
-                socketio.start_background_task(question_timer_countdown, game_id)
                 return  # Stop retrying if a unique question-answer pair is found
 
         # If all attempts result in duplicates, notify the players
         emit('error', {'message': "Couldn't generate a unique question. Try another topic."}, to=game_id)
 
-def question_timer_countdown(game_id):
-    if game_id not in games:
-        return
-    
-    end_time = games[game_id]['question_timer']
-    
-    while time.time() < end_time and game_id in games:
-        # Sleep for a short time to avoid excessive CPU usage
-        socketio.sleep(1)
-        
-        # If all players have answered, we don't need to wait
-        if game_id in games and len(games[game_id]['answers']) == len(games[game_id]['players']):
-            break
-    
-    # Time's up or all players answered
-    if game_id in games:
-        # Add "Time's up" for players who didn't answer
-        for player in games[game_id]['players']:
-            if player not in games[game_id]['answers']:
-                games[game_id]['answers'][player] = "No answer submitted"
-        
-        # Proceed with showing results
-        process_round_results(game_id)
-
-def process_round_results(game_id):
-    if game_id not in games or not games[game_id]['current_question']:
-        return
-    
-    correct_answer = games[game_id]['current_question']['answer']
-    correct_players = []
-    
-    for player, player_answer in games[game_id]['answers'].items():
-        # Skip players who didn't answer
-        if player_answer == "No answer submitted":
-            continue
-            
-        # Use fuzzy matching to determine if the answer is close enough.
-        if is_close_enough(player_answer, correct_answer):
-            correct_players.append(player)
-            games[game_id]['scores'][player] += 1
-    
-    # Increment round counter
-    games[game_id]['round_number'] += 1
-    
-    # Check if the game is over (15 rounds)
-    game_over = games[game_id]['round_number'] > games[game_id]['total_rounds']
-    
-    if game_over:
-        # Find the winner
-        winner = max(games[game_id]['scores'].items(), key=lambda x: x[1])[0]
-        
-        # Send game over event
-        socketio.emit('game_over', {
-            'winner': winner,
-            'scores': games[game_id]['scores']
-        }, to=game_id)
-        
-        # Update game status
-        games[game_id]['status'] = 'completed'
-    else:
-        # Update to the next player's turn
-        games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
-        next_player = games[game_id]['players'][games[game_id]['current_player_index']]
-        
-        socketio.emit('round_results', {
-            'correct_answer': correct_answer,
-            'explanation': games[game_id]['current_question']['explanation'],
-            'player_answers': games[game_id]['answers'],
-            'correct_players': correct_players,
-            'next_player': next_player,
-            'scores': games[game_id]['scores'],
-            'round_number': games[game_id]['round_number'],
-            'total_rounds': games[game_id]['total_rounds'],
-            'game_over': game_over
-        }, to=game_id)
-        
 @socketio.on('submit_answer')
 def handle_submit_answer(data):
     game_id = data.get('game_id')
@@ -401,20 +257,37 @@ def handle_submit_answer(data):
         games[game_id]['answers'][username] = answer
         emit('player_answered', {'username': username}, to=game_id)
         
-        # Check if all players have answered
+        # Check if all players (even disconnected ones) have answered.
         if len(games[game_id]['answers']) == len(games[game_id]['players']):
-            # If all players answered, process results immediately
-            process_round_results(game_id)
+            correct_answer = games[game_id]['current_question']['answer']
+            correct_players = []
+            
+            for player, player_answer in games[game_id]['answers'].items():
+                # Use fuzzy matching to determine if the answer is close enough.
+                if is_close_enough(player_answer, correct_answer):
+                    correct_players.append(player)
+                    games[game_id]['scores'][player] += 1
+            
+            # Update to the next player's turn.
+            games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
+            next_player = games[game_id]['players'][games[game_id]['current_player_index']]
+            
+            emit('round_results', {
+                'correct_answer': correct_answer,
+                'explanation': games[game_id]['current_question']['explanation'],
+                'player_answers': games[game_id]['answers'],
+                'correct_players': correct_players,
+                'next_player': next_player,
+                'scores': games[game_id]['scores']
+            }, to=game_id)
 
 @socketio.on('disconnect')
 def handle_disconnect():
     username = session.get('username')
-    game_id = session.get('game_id')
-    
     # Instead of removing the user, mark them as disconnected.
-    if game_id and game_id in games and username:
-        if username in games[game_id]['players']:
-            games[game_id].setdefault('disconnected', set()).add(username)
+    for game_id, game in games.items():
+        if username in game['players']:
+            game.setdefault('disconnected', set()).add(username)
             emit('player_disconnected', {'username': username}, to=game_id)
 
 if __name__ == '__main__':
