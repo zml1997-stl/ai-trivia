@@ -11,6 +11,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 import string
 import random
 import re
+from datetime import datetime, timedelta
 
 def generate_game_id():
     # Loop to avoid collisions in the unlikely event the ID already exists.
@@ -75,7 +76,8 @@ def create_game():
         'current_player_index': 0,
         'current_question': None,
         'answers': {},
-        'scores': {username: 0}
+        'scores': {username: 0},
+        'question_timer': None
     }
     
     session['game_id'] = game_id
@@ -160,6 +162,25 @@ def get_trivia_question(topic):
             "explanation": "There was an error with the AI service (General Exception)."
         }
 
+def get_random_topic():
+    try:
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        prompt = """
+        Suggest a random trivia topic. 
+        Return your response in the following JSON format:
+        {
+            "topic": "The suggested trivia topic"
+        }
+        Do NOT include any other text besides the JSON.
+        """
+        response = model.generate_content(prompt)
+        cleaned_text = response.text.replace('`json', '').replace('`', '').strip()
+        result = json.loads(cleaned_text)
+        return result['topic']
+    except Exception as e:
+        print(f"Error generating random topic: {str(e)}")
+        return "General Knowledge"
+
 @socketio.on('connect')
 def handle_connect():
     print("Client connected")
@@ -234,9 +255,12 @@ def handle_select_topic(data):
                 games[game_id]['current_question'] = question_data
                 games[game_id]['answers'] = {}
 
+                # Start the 30-second timer
+                games[game_id]['question_timer'] = datetime.now() + timedelta(seconds=30)
                 emit('question_ready', {
                     'question': question_data['question'],
-                    'topic': topic
+                    'topic': topic,
+                    'timer_end': games[game_id]['question_timer'].isoformat()
                 }, to=game_id)
                 return  # Stop retrying if a unique question-answer pair is found
 
@@ -259,27 +283,63 @@ def handle_submit_answer(data):
         
         # Check if all players (even disconnected ones) have answered.
         if len(games[game_id]['answers']) == len(games[game_id]['players']):
-            correct_answer = games[game_id]['current_question']['answer']
-            correct_players = []
-            
-            for player, player_answer in games[game_id]['answers'].items():
-                # Use fuzzy matching to determine if the answer is close enough.
-                if is_close_enough(player_answer, correct_answer):
-                    correct_players.append(player)
-                    games[game_id]['scores'][player] += 1
-            
-            # Update to the next player's turn.
-            games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
-            next_player = games[game_id]['players'][games[game_id]['current_player_index']]
-            
-            emit('round_results', {
-                'correct_answer': correct_answer,
-                'explanation': games[game_id]['current_question']['explanation'],
-                'player_answers': games[game_id]['answers'],
-                'correct_players': correct_players,
-                'next_player': next_player,
-                'scores': games[game_id]['scores']
-            }, to=game_id)
+            evaluate_answers(game_id)
+
+def evaluate_answers(game_id):
+    correct_answer = games[game_id]['current_question']['answer']
+    correct_players = []
+    
+    for player, player_answer in games[game_id]['answers'].items():
+        # Use fuzzy matching to determine if the answer is close enough.
+        if is_close_enough(player_answer, correct_answer):
+            correct_players.append(player)
+            games[game_id]['scores'][player] += 1
+    
+    # Update to the next player's turn.
+    games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
+    next_player = games[game_id]['players'][games[game_id]['current_player_index']]
+    
+    emit('round_results', {
+        'correct_answer': correct_answer,
+        'explanation': games[game_id]['current_question']['explanation'],
+        'player_answers': games[game_id]['answers'],
+        'correct_players': correct_players,
+        'next_player': next_player,
+        'scores': games[game_id]['scores']
+    }, to=game_id)
+
+    # Reset the timer
+    games[game_id]['question_timer'] = None
+
+@socketio.on('request_random_topic')
+def handle_request_random_topic(data):
+    game_id = data.get('game_id')
+    username = data.get('username')
+    
+    if (game_id in games and 
+        username in games[game_id]['players'] and 
+        games[game_id]['status'] == 'in_progress' and
+        games[game_id]['players'][games[game_id]['current_player_index']] == username):
+        
+        topic = get_random_topic()
+        emit('random_topic_selected', {'topic': topic}, to=game_id)
+
+@socketio.on('leave_game')
+def handle_leave_game(data):
+    game_id = data.get('game_id')
+    username = data.get('username')
+    
+    if game_id in games and username in games[game_id]['players']:
+        games[game_id]['players'].remove(username)
+        del games[game_id]['scores'][username]
+        
+        if username in games[game_id].get('disconnected', set()):
+            games[game_id]['disconnected'].discard(username)
+        
+        emit('player_left', {'username': username, 'players': games[game_id]['players']}, to=game_id)
+        
+        if len(games[game_id]['players']) == 0:
+            del games[game_id]
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -289,6 +349,12 @@ def handle_disconnect():
         if username in game['players']:
             game.setdefault('disconnected', set()).add(username)
             emit('player_disconnected', {'username': username}, to=game_id)
+
+def check_timers():
+    current_time = datetime.now()
+    for game_id, game in games.items():
+        if game['question_timer'] and current_time >= game['question_timer']:
+            evaluate_answers(game_id)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
