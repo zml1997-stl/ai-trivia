@@ -280,6 +280,11 @@ def handle_submit_answer(data):
         if time_elapsed.total_seconds() > 30:
             answer = None  # Mark as no answer submitted
         
+        # Map the selected letter (A, B, C, D) to the corresponding option text
+        if answer in ['A', 'B', 'C', 'D']:
+            option_index = ord(answer) - ord('A')  # Convert A=0, B=1, C=2, D=3
+            answer = games[game_id]['current_question']['options'][option_index]
+        
         games[game_id]['answers'][username] = answer
         emit('player_answered', {'username': username}, to=game_id)
         
