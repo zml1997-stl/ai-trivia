@@ -9,6 +9,9 @@
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
+   <audio id="background-music" autoplay loop muted>
+    <source src="{{ url_for('static', filename='music.mp3') }}" type="audio/mpeg">
+</audio> 
     <div class="container">
         <div class="row justify-content-center mt-3">
             <div class="col-lg-8">
@@ -552,5 +555,10 @@
             }, 120); // 15 seconds total countdown (50ms * 100 steps)
         }
     </script>
+    <script>
+    document.addEventListener("click", function() {
+        document.getElementById("background-music").muted = false;
+    }, { once: true });  // Runs only once on first user interaction
+</script>
 </body>
 </html>
