@@ -112,7 +112,7 @@ def game(game_id):
 
 def get_trivia_question(topic):
     try:
-        model = genai.GenerativeModel('gemini-2.0-pro-exp-02-05')  # Use 'gemini-pro'
+        model = genai.GenerativeModel('gemini-2.0-flash')  # Use 'gemini-pro'
 
         prompt = f"""
         Create a trivia question about {topic}. 
