@@ -13,9 +13,6 @@
         <div class="row justify-content-center mt-3">
             <div class="col-lg-8">
                 <div class="card shadow">
-                    <!-- Leave game button -->
-                    <a href="/leave_game" class="btn btn-sm btn-danger leave-game-btn">Leave Game</a>
-                    
                     <div class="card-header bg-primary text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h2 class="mb-0">AI Trivia Game</h2>
@@ -26,11 +23,6 @@
                     </div>
                     
                     <div class="card-body">
-                        <!-- Round Counter - Always visible once game starts -->
-                        <div id="round-counter" class="rounds-display" style="display: none;">
-                            Round <span id="current-round">1</span> of <span id="total-rounds">15</span>
-                        </div>
-                        
                         <!-- Waiting Lobby -->
                         <div id="waiting-lobby" class="text-center">
                             <h3>Waiting for Players</h3>
@@ -55,10 +47,7 @@
                             <div class="mb-3">
                                 <input type="text" id="topic-input" class="form-control form-control-lg" placeholder="Enter a topic (e.g., Science, History, Movies)">
                             </div>
-                            <div class="d-flex gap-2">
-                                <button id="submit-topic-btn" class="btn btn-primary btn-lg flex-grow-1">Submit Topic</button>
-                                <button id="random-topic-btn" class="btn btn-secondary btn-lg">Random Topic</button>
-                            </div>
+                            <button id="submit-topic-btn" class="btn btn-primary btn-lg">Submit Topic</button>
                         </div>
                         
                         <!-- Question Display -->
@@ -66,14 +55,6 @@
                             <div class="text-center mb-4">
                                 <span class="badge bg-secondary mb-2">Topic: <span id="topic-display"></span></span>
                                 <h3 id="question-text" class="mb-3"></h3>
-                            </div>
-                            
-                            <!-- Timer Display -->
-                            <div class="timer-container">
-                                <div class="timer-display" id="timer-count">30</div>
-                                <div class="timer-progress">
-                                    <div id="timer-bar" class="timer-bar" style="width: 100%"></div>
-                                </div>
                             </div>
                             
                             <div class="answer-section">
@@ -129,25 +110,6 @@
                             </div>
                         </div>
                         
-                        <!-- Game Over Display -->
-                        <div id="game-over-display" style="display: none;">
-                            <h3 class="text-center mb-4">Game Over!</h3>
-                            <div class="card mb-4">
-                                <div class="card-header bg-success text-white">
-                                    <h4 class="mb-0">Winner</h4>
-                                </div>
-                                <div class="card-body text-center">
-                                    <p id="winner-name" class="display-6"></p>
-                                    <p class="lead">Congratulations!</p>
-                                </div>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <a href="/" class="btn btn-primary">Return to Home</a>
-                                <a href="/leave_game" class="btn btn-secondary">Leave Game</a>
-                            </div>
-                        </div>
-                        
                         <!-- Scoreboard (always visible once game starts) -->
                         <div id="scoreboard" class="mt-4" style="display: none;">
                             <h4>Scoreboard</h4>
@@ -177,16 +139,13 @@
         const isHost = {{ 'true' if is_host else 'false' }};
         let socket;
         let answeredPlayers = new Set();
-        let questionTimer;
         
         // DOM elements
         const waitingLobby = document.getElementById('waiting-lobby');
         const topicSelection = document.getElementById('topic-selection');
         const questionDisplay = document.getElementById('question-display');
         const resultsDisplay = document.getElementById('results-display');
-        const gameOverDisplay = document.getElementById('game-over-display');
         const scoreboard = document.getElementById('scoreboard');
-        const roundCounter = document.getElementById('round-counter');
         
         // Connect to Socket.IO
         document.addEventListener('DOMContentLoaded', function() {
@@ -213,18 +172,6 @@
                 updatePlayerList(data.players);
             });
             
-            socket.on('player_disconnected', function(data) {
-                const playerName = data.username;
-                // Mark player as disconnected in the player list
-                const playerItems = document.querySelectorAll('#player-list li');
-                playerItems.forEach(item => {
-                    if (item.textContent.includes(playerName)) {
-                        item.classList.add('text-muted');
-                        item.innerHTML += ' <span class="badge bg-warning">Disconnected</span>';
-                    }
-                });
-            });
-            
             socket.on('game_started', function(data) {
                 startGame(data);
             });
@@ -239,18 +186,6 @@
             
             socket.on('round_results', function(data) {
                 showResults(data);
-            });
-            
-            socket.on('game_over', function(data) {
-                showGameOver(data);
-            });
-            
-            socket.on('error', function(data) {
-                alert(data.message);
-                // If there was an error generating a question, show topic selection again
-                const loadingEl = document.getElementById('loading-question');
-                if (loadingEl) loadingEl.remove();
-                topicSelection.style.display = 'block';
             });
         }
         
@@ -270,94 +205,45 @@
             document.getElementById('submit-topic-btn').addEventListener('click', function() {
                 const topic = document.getElementById('topic-input').value.trim();
                 if (topic) {
-                    submitTopic(topic);
+                    socket.emit('select_topic', {
+                        game_id: gameId,
+                        username: username,
+                        topic: topic
+                    });
+                    
+                    // Hide topic selection and show loading
+                    topicSelection.style.display = 'none';
+                    const loadingDiv = document.createElement('div');
+                    loadingDiv.id = 'loading-question';
+                    loadingDiv.className = 'text-center my-5';
+                    loadingDiv.innerHTML = `
+                        <h3>Generating Question...</h3>
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    `;
+                    document.querySelector('.card-body').appendChild(loadingDiv);
                 }
-            });
-            
-            // Random topic button
-            document.getElementById('random-topic-btn').addEventListener('click', function() {
-                socket.emit('select_random_topic', {
-                    game_id: gameId,
-                    username: username
-                });
-                
-                // Hide topic selection and show loading
-                topicSelection.style.display = 'none';
-                const loadingDiv = document.createElement('div');
-                loadingDiv.id = 'loading-question';
-                loadingDiv.className = 'text-center my-5';
-                loadingDiv.innerHTML = `
-                    <h3>Generating Question...</h3>
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                `;
-                document.querySelector('.card-body').appendChild(loadingDiv);
             });
             
             // Submit answer button
             document.getElementById('submit-answer-btn').addEventListener('click', function() {
                 const answer = document.getElementById('answer-input').value.trim();
                 if (answer) {
-                    submitAnswer(answer);
+                    socket.emit('submit_answer', {
+                        game_id: gameId,
+                        username: username,
+                        answer: answer
+                    });
+                    
+                    // Disable the answer input and button
+                    document.getElementById('answer-input').disabled = true;
+                    document.getElementById('submit-answer-btn').disabled = true;
+                    
+                    // Show waiting for others
+                    document.querySelector('.waiting-for-answers').style.display = 'block';
                 }
             });
-            
-            // Enter key for answer input
-            document.getElementById('answer-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    const answer = document.getElementById('answer-input').value.trim();
-                    if (answer) {
-                        submitAnswer(answer);
-                    }
-                }
-            });
-            
-            // Enter key for topic input
-            document.getElementById('topic-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    const topic = document.getElementById('topic-input').value.trim();
-                    if (topic) {
-                        submitTopic(topic);
-                    }
-                }
-            });
-        }
-        
-        function submitTopic(topic) {
-            socket.emit('select_topic', {
-                game_id: gameId,
-                username: username,
-                topic: topic
-            });
-            
-            // Hide topic selection and show loading
-            topicSelection.style.display = 'none';
-            const loadingDiv = document.createElement('div');
-            loadingDiv.id = 'loading-question';
-            loadingDiv.className = 'text-center my-5';
-            loadingDiv.innerHTML = `
-                <h3>Generating Question...</h3>
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            `;
-            document.querySelector('.card-body').appendChild(loadingDiv);
-        }
-        
-        function submitAnswer(answer) {
-            socket.emit('submit_answer', {
-                game_id: gameId,
-                username: username,
-                answer: answer
-            });
-            
-            // Disable the answer input and button
-            document.getElementById('answer-input').disabled = true;
-            document.getElementById('submit-answer-btn').disabled = true;
-            
-            // Show waiting for others
-            document.querySelector('.waiting-for-answers').style.display = 'block';
         }
         
         function updatePlayerList(players) {
@@ -382,15 +268,8 @@
             // Hide waiting lobby
             waitingLobby.style.display = 'none';
             
-            // Show scoreboard and round counter
+            // Show scoreboard
             scoreboard.style.display = 'block';
-            roundCounter.style.display = 'block';
-            
-            // Update round counter
-            document.getElementById('current-round').textContent = data.round_number;
-            document.getElementById('total-rounds').textContent = data.total_rounds;
-            
-            // Update scoreboard
             updateScoreboard(data.scores);
             
             // Check if it's your turn to select a topic
@@ -408,43 +287,6 @@
                 `;
                 document.querySelector('.card-body').appendChild(waitingDiv);
             }
-        }
-        
-        function startTimer(duration) {
-            clearInterval(questionTimer);
-            
-            const timerDisplay = document.getElementById('timer-count');
-            const timerBar = document.getElementById('timer-bar');
-            
-            let timeLeft = duration;
-            timerDisplay.textContent = timeLeft;
-            timerBar.style.width = '100%';
-            
-            questionTimer = setInterval(() => {
-                timeLeft--;
-                
-                if (timeLeft < 0) {
-                    clearInterval(questionTimer);
-                    // If time runs out and answer hasn't been submitted, submit a blank answer
-                    if (!document.getElementById('answer-input').disabled) {
-                        submitAnswer("No answer submitted");
-                    }
-                    return;
-                }
-                
-                timerDisplay.textContent = timeLeft;
-                const percentage = (timeLeft / duration) * 100;
-                timerBar.style.width = percentage + '%';
-                
-                // Change color based on time left
-                if (timeLeft <= 5) {
-                    timerBar.style.backgroundColor = '#dc3545'; // red
-                } else if (timeLeft <= 15) {
-                    timerBar.style.backgroundColor = '#ffc107'; // yellow
-                } else {
-                    timerBar.style.backgroundColor = '#198754'; // green
-                }
-            }, 1000);
         }
         
         function showQuestion(data) {
@@ -470,13 +312,6 @@
             answeredPlayers.clear();
             document.getElementById('answered-players').innerHTML = '';
             document.getElementById('answer-progress').style.width = '0%';
-            
-            // Start the timer
-            const timerDuration = data.timer_duration || 30;
-            startTimer(timerDuration);
-            
-            // Focus on the answer input
-            document.getElementById('answer-input').focus();
         }
         
         function playerAnswered(playerName) {
@@ -490,11 +325,6 @@
                 const li = document.createElement('li');
                 li.className = 'list-group-item';
                 li.textContent = player;
-                
-                if (player === username) {
-                    li.className += ' list-group-item-primary';
-                }
-                
                 answeredPlayersList.appendChild(li);
             });
             
@@ -505,17 +335,11 @@
         }
         
         function showResults(data) {
-            // Clear the question timer
-            clearInterval(questionTimer);
-            
             // Hide question display
             questionDisplay.style.display = 'none';
             
             // Show results
             resultsDisplay.style.display = 'block';
-            
-            // Update round counter
-            document.getElementById('current-round').textContent = data.round_number;
             
             // Populate correct answer
             document.getElementById('correct-answer').textContent = data.correct_answer;
@@ -548,23 +372,7 @@
             updateScoreboard(data.scores);
             
             // Set up for next round
-            startNextRoundCountdown();
-        }
-        
-        function showGameOver(data) {
-            // Hide all other displays
-            questionDisplay.style.display = 'none';
-            resultsDisplay.style.display = 'none';
-            topicSelection.style.display = 'none';
-            
-            // Show game over display
-            gameOverDisplay.style.display = 'block';
-            
-            // Display winner
-            document.getElementById('winner-name').textContent = data.winner;
-            
-            // Update final scoreboard
-            updateScoreboard(data.scores);
+            startNextRoundCountdown(data.next_player);
         }
         
         function updateScoreboard(scores) {
@@ -590,7 +398,7 @@
             });
         }
         
-        function startNextRoundCountdown() {
+        function startNextRoundCountdown(nextPlayer) {
             let progress = 0;
             const progressBar = document.getElementById('next-round-progress');
             
@@ -605,7 +413,6 @@
                     progressBar.style.width = '0%';
                     
                     // Check if it's your turn
-                    const nextPlayer = document.getElementById('next-player').textContent;
                     if (nextPlayer === username) {
                         topicSelection.style.display = 'block';
                     } else {
@@ -621,7 +428,7 @@
                         document.querySelector('.card-body').appendChild(waitingDiv);
                     }
                 }
-            }, 75); // 15 seconds total countdown (75ms * 100 steps)
+            }, 75); // 15 seconds total countdown (50ms * 100 steps)
         }
     </script>
 </body>
