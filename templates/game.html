@@ -65,8 +65,13 @@
                             
                             <div class="answer-section">
                                 <div class="mb-3">
-                                    <label for="answer-input" class="form-label">Your Answer:</label>
-                                    <input type="text" id="answer-input" class="form-control form-control-lg">
+                                    <label class="form-label">Select an Answer:</label>
+                                    <div class="list-group">
+                                        <button id="option-a" class="list-group-item list-group-item-action">A) <span id="option-a-text"></span></button>
+                                        <button id="option-b" class="list-group-item list-group-item-action">B) <span id="option-b-text"></span></button>
+                                        <button id="option-c" class="list-group-item list-group-item-action">C) <span id="option-c-text"></span></button>
+                                        <button id="option-d" class="list-group-item list-group-item-action">D) <span id="option-d-text"></span></button>
+                                    </div>
                                 </div>
                                 <button id="submit-answer-btn" class="btn btn-primary btn-lg">Submit Answer</button>
                             </div>
@@ -152,6 +157,7 @@
         let answeredPlayers = new Set();
         let timerInterval;
         let timeLeft = 30;
+        let selectedAnswer = null;
         
         // DOM elements
         const waitingLobby = document.getElementById('waiting-lobby');
@@ -269,18 +275,31 @@
                 document.querySelector('.card-body').appendChild(loadingDiv);
             });
             
+            // Answer selection buttons
+            document.getElementById('option-a').addEventListener('click', function() {
+                selectAnswer('A');
+            });
+            document.getElementById('option-b').addEventListener('click', function() {
+                selectAnswer('B');
+            });
+            document.getElementById('option-c').addEventListener('click', function() {
+                selectAnswer('C');
+            });
+            document.getElementById('option-d').addEventListener('click', function() {
+                selectAnswer('D');
+            });
+
             // Submit answer button
             document.getElementById('submit-answer-btn').addEventListener('click', function() {
-                const answer = document.getElementById('answer-input').value.trim();
-                if (answer) {
+                if (selectedAnswer) {
                     socket.emit('submit_answer', {
                         game_id: gameId,
                         username: username,
-                        answer: answer
+                        answer: selectedAnswer
                     });
                     
-                    // Disable the answer input and button
-                    document.getElementById('answer-input').disabled = true;
+                    // Disable the answer buttons and submit button
+                    disableAnswerButtons();
                     document.getElementById('submit-answer-btn').disabled = true;
                     
                     // Show waiting for others
@@ -294,6 +313,21 @@
             });
         }
         
+        function selectAnswer(answer) {
+            selectedAnswer = answer;
+            // Highlight the selected answer
+            document.querySelectorAll('.list-group-item').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(`option-${answer.toLowerCase()}`).classList.add('active');
+        }
+
+        function disableAnswerButtons() {
+            document.querySelectorAll('.list-group-item').forEach(button => {
+                button.disabled = true;
+            });
+        }
+
         function updatePlayerList(players) {
             const playerList = document.getElementById('player-list');
             playerList.innerHTML = '';
@@ -351,9 +385,18 @@
             document.getElementById('topic-display').textContent = data.topic;
             document.getElementById('question-text').textContent = data.question;
             
-            // Reset answer input
-            document.getElementById('answer-input').value = '';
-            document.getElementById('answer-input').disabled = false;
+            // Populate answer options
+            document.getElementById('option-a-text').textContent = data.options[0];
+            document.getElementById('option-b-text').textContent = data.options[1];
+            document.getElementById('option-c-text').textContent = data.options[2];
+            document.getElementById('option-d-text').textContent = data.options[3];
+            
+            // Reset answer selection
+            selectedAnswer = null;
+            document.querySelectorAll('.list-group-item').forEach(button => {
+                button.classList.remove('active');
+                button.disabled = false;
+            });
             document.getElementById('submit-answer-btn').disabled = false;
             document.querySelector('.waiting-for-answers').style.display = 'none';
             
@@ -377,8 +420,17 @@
                 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    // Automatically submit empty answer if time runs out
-                    document.getElementById('submit-answer-btn').click();
+                    // Automatically submit the selected answer if time runs out
+                    if (selectedAnswer) {
+                        document.getElementById('submit-answer-btn').click();
+                    } else {
+                        // If no answer is selected, submit an empty answer
+                        socket.emit('submit_answer', {
+                            game_id: gameId,
+                            username: username,
+                            answer: null
+                        });
+                    }
                 }
             }, 1000);
         }
