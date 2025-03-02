@@ -141,6 +141,7 @@ def get_trivia_question(topic):
         {{
             "question": "The trivia question",
             "answer": "The correct answer",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
             "explanation": "A brief explanation of the answer"
         }}
         The question should be specific and have a clear, unambiguous answer. Do NOT include any other text besides the JSON.
@@ -160,6 +161,7 @@ def get_trivia_question(topic):
             return {
                 "question": f"What is a notable fact about {topic}?",  # Fallback question
                 "answer": "Unable to generate answer",
+                "options": ["Option A", "Option B", "Option C", "Option D"],
                 "explanation": "There was an error parsing the AI response (JSONDecodeError)."
             }
 
@@ -168,6 +170,7 @@ def get_trivia_question(topic):
         return {
             "question": f"What is a notable fact about {topic}?",  # Fallback question
             "answer": "Unable to generate answer",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
             "explanation": "There was an error with the AI service (General Exception)."
         }
 
@@ -253,6 +256,7 @@ def handle_select_topic(data):
 
                 emit('question_ready', {
                     'question': question_data['question'],
+                    'options': question_data['options'],
                     'topic': topic
                 }, to=game_id)
                 return  # Stop retrying if a unique question-answer pair is found
