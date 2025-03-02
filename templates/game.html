@@ -202,6 +202,11 @@
             socket.on('round_results', function(data) {
                 showResults(data);
             });
+
+            // Add listener for random topic selection
+            socket.on('random_topic_selected', function(data) {
+                document.getElementById('topic-input').value = data.topic;
+            });
         }
         
         function setupEventListeners() {
@@ -243,10 +248,25 @@
 
             // Random topic button
             document.getElementById('random-topic-btn').addEventListener('click', function() {
-                const randomTopics = ['Science', 'History', 'Movies', 'Geography', 'Sports', 'Music', 'Technology', 'Art', 'Literature', 'Pop Culture'];
-                const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
-                document.getElementById('topic-input').value = randomTopic;
-                document.getElementById('submit-topic-btn').click();
+                // Send empty topic to server
+                socket.emit('select_topic', {
+                    game_id: gameId,
+                    username: username,
+                    topic: ''
+                });
+                
+                // Hide topic selection and show loading
+                topicSelection.style.display = 'none';
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loading-question';
+                loadingDiv.className = 'text-center my-5';
+                loadingDiv.innerHTML = `
+                    <h3>Generating Question...</h3>
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                `;
+                document.querySelector('.card-body').appendChild(loadingDiv);
             });
             
             // Submit answer button
