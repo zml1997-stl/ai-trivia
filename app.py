@@ -77,6 +77,22 @@ RANDOM_TOPICS = [
     "History of theater", "The art of brewing", "The history of toys and games"
 ]
 
+def generate_funny_fact():
+    try:
+        model = genai.GenerativeModel('gemini-2.0-flash')  # Use 'gemini-pro' if preferred
+
+        prompt = """
+        Generate a random funny or interesting fact. 
+        The fact should be short, entertaining, and suitable for a trivia game.
+        Return only the fact as a plain text string, without any additional formatting or explanations.
+        """
+
+        response = model.generate_content(prompt)
+        return response.text.strip()  # Return the generated fact
+    except Exception as e:
+        print(f"Error generating funny fact: {str(e)}")
+        return "Did you know? The world is full of fascinating facts!"  # Fallback fact
+
 def generate_game_id():
     # Loop to avoid collisions in the unlikely event the ID already exists.
     while True:
@@ -228,6 +244,13 @@ def get_trivia_question(topic):
             "options": ["Option A", "Option B", "Option C", "Option D"],
             "explanation": "There was an error with the AI service (General Exception)."
         }
+
+@socketio.on('request_funny_fact')
+def handle_request_funny_fact(data):
+    game_id = data.get('game_id')
+    if game_id in games:
+        funny_fact = generate_funny_fact()  # Generate a random funny fact
+        emit('receive_funny_fact', {'fact': funny_fact}, to=game_id)  # Send it to the game room
 
 @socketio.on('connect')
 def handle_connect():
