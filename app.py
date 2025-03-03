@@ -192,14 +192,16 @@ def get_trivia_question(topic):
 
         prompt = f"""
         Create a trivia question about {topic}. 
-        Return your response in the following JSON format:
+        The question must be engaging, specific, and have a single, clear, unambiguous answer. 
+        Return your response strictly in the following JSON format, with no additional text outside the JSON:
         {{
             "question": "The trivia question",
             "answer": "The correct answer",
             "options": ["Option A", "Option B", "Option C", "Option D"],
-            "explanation": "A brief explanation of the answer"
+            "explanation": "A concise explanation of why the answer is correct"
         }}
-        The question should be specific and have a clear, unambiguous answer. Do NOT include any other text besides the JSON.
+        Ensure the options include one correct answer and three plausible but incorrect distractors. 
+        Tailor the difficulty to a general audience unless otherwise specified.
         """
 
         response = model.generate_content(prompt)
