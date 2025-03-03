@@ -527,7 +527,7 @@
             const progressBar = document.getElementById('next-round-progress');
             
             const interval = setInterval(() => {
-                progress += 1.25;
+                progress += 3.75;
                 progressBar.style.width = progress + '%';
                 
                 if (progress >= 100) {
@@ -552,7 +552,7 @@
                         document.querySelector('.card-body').appendChild(waitingDiv);
                     }
                 }
-            }, 187.5); // 15 seconds total countdown (50ms * 100 steps)
+            }, 375); // 15 seconds total countdown (50ms * 100 steps)
         }
     </script>
     <script>
