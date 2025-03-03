@@ -200,7 +200,8 @@ def get_trivia_question(topic):
             "options": ["Option A", "Option B", "Option C", "Option D"],
             "explanation": "A concise explanation of why the answer is correct"
         }}
-        Ensure the options include one correct answer and three plausible but incorrect distractors. 
+        Ensure the options include one correct answer and three plausible but incorrect distractors.
+        Do not include any part of the answer in the question.
         Tailor the difficulty to a general audience unless otherwise specified. Try to keep questions mondern,
         and something that most people would know unless the topic is specifically realted to pre modern topics.
         """
