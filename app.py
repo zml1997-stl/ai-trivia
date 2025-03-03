@@ -201,7 +201,8 @@ def get_trivia_question(topic):
             "explanation": "A concise explanation of why the answer is correct"
         }}
         Ensure the options include one correct answer and three plausible but incorrect distractors. 
-        Tailor the difficulty to a general audience unless otherwise specified.
+        Tailor the difficulty to a general audience unless otherwise specified. Try to keep questions mondern,
+        and something that most people would know unless the topic is specifically realted to pre modern topics.
         """
 
         response = model.generate_content(prompt)
