@@ -349,33 +349,31 @@
             });
         }
         
-    function startGame(data) {
-    // Hide waiting lobby
-    waitingLobby.style.display = 'none';
-    
-    // Show scoreboard and leave game button
-    scoreboard.style.display = 'block';
-    leaveGameContainer.style.display = 'block';
-    updateScoreboard(data.scores);
-    
-    // Check if it's your turn to select a topic
-    if (data.current_player === username) {
-        topicSelection.style.display = 'block';
-        // Clear the topic input field
-        document.getElementById('topic-input').value = '';
-    } else {
-        const waitingDiv = document.createElement('div');
-        waitingDiv.id = 'waiting-for-topic';
-        waitingDiv.className = 'text-center my-5';
-        waitingDiv.innerHTML = `
-            <h3>Waiting for ${data.current_player} to select a topic...</h3>
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        `;
-        document.querySelector('.card-body').appendChild(waitingDiv);
-    }
-}
+        function startGame(data) {
+            // Hide waiting lobby
+            waitingLobby.style.display = 'none';
+            
+            // Show scoreboard and leave game button
+            scoreboard.style.display = 'block';
+            leaveGameContainer.style.display = 'block';
+            updateScoreboard(data.scores);
+            
+            // Check if it's your turn to select a topic
+            if (data.current_player === username) {
+                topicSelection.style.display = 'block';
+            } else {
+                const waitingDiv = document.createElement('div');
+                waitingDiv.id = 'waiting-for-topic';
+                waitingDiv.className = 'text-center my-5';
+                waitingDiv.innerHTML = `
+                    <h3>Waiting for ${data.current_player} to select a topic...</h3>
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                `;
+                document.querySelector('.card-body').appendChild(waitingDiv);
+            }
+        }
         
         function showQuestion(data) {
             // Clear any loading or waiting elements
@@ -461,80 +459,101 @@
         }
         
         function showResults(data) {
-    // Hide question display
-    questionDisplay.style.display = 'none';
-    
-    // Show results
-    resultsDisplay.style.display = 'block';
-    
-    // Populate correct answer
-    document.getElementById('correct-answer').textContent = data.correct_answer;
-    document.getElementById('answer-explanation').textContent = data.explanation;
-    
-    // Populate player answers
-    const playerAnswersList = document.getElementById('player-answers');
-    playerAnswersList.innerHTML = '';
-    
-    Object.entries(data.player_answers).forEach(([player, answer]) => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item';
-        
-        if (data.correct_players.includes(player)) {
-            li.className += ' list-group-item-success';
-        }
-        
-        if (player === username) {
-            li.className += ' fw-bold';
-        }
-        
-        li.innerHTML = `<span>${player}:</span> <span>${answer || 'No answer submitted'}</span>`;
-        playerAnswersList.appendChild(li);
-    });
-    
-    // Update next player info
-    document.getElementById('next-player').textContent = data.next_player;
-    
-    // Update scoreboard
-    updateScoreboard(data.scores);
-    
-    // Set up for next round
-    startNextRoundCountdown(data.next_player);
-}
-
-function startNextRoundCountdown(nextPlayer) {
-    let progress = 0;
-    const progressBar = document.getElementById('next-round-progress');
-    
-    const interval = setInterval(() => {
-        progress += 12.5;
-        progressBar.style.width = progress + '%';
-        
-        if (progress >= 100) {
-            clearInterval(interval);
-            // Reset UI for next round
-            resultsDisplay.style.display = 'none';
-            progressBar.style.width = '0%';
+            // Hide question display
+            questionDisplay.style.display = 'none';
             
-            // Check if it's your turn
-            if (nextPlayer === username) {
-                topicSelection.style.display = 'block';
-                // Clear the topic input field
-                document.getElementById('topic-input').value = '';
-            } else {
-                const waitingDiv = document.createElement('div');
-                waitingDiv.id = 'waiting-for-topic';
-                waitingDiv.className = 'text-center my-5';
-                waitingDiv.innerHTML = `
-                    <h3>Waiting for ${nextPlayer} to select a topic...</h3>
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                `;
-                document.querySelector('.card-body').appendChild(waitingDiv);
-            }
+            // Show results
+            resultsDisplay.style.display = 'block';
+            
+            // Populate correct answer
+            document.getElementById('correct-answer').textContent = data.correct_answer;
+            document.getElementById('answer-explanation').textContent = data.explanation;
+            
+            // Populate player answers
+            const playerAnswersList = document.getElementById('player-answers');
+            playerAnswersList.innerHTML = '';
+            
+            Object.entries(data.player_answers).forEach(([player, answer]) => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                
+                if (data.correct_players.includes(player)) {
+                    li.className += ' list-group-item-success';
+                }
+                
+                if (player === username) {
+                    li.className += ' fw-bold';
+                }
+                
+                li.innerHTML = `<span>${player}:</span> <span>${answer || 'No answer submitted'}</span>`;
+                playerAnswersList.appendChild(li);
+            });
+            
+            // Update next player info
+            document.getElementById('next-player').textContent = data.next_player;
+            
+            // Update scoreboard
+            updateScoreboard(data.scores);
+            
+            // Set up for next round
+            startNextRoundCountdown(data.next_player);
         }
-    }, 1000); // 15 seconds total countdown (50ms * 100 steps)
-}
+        
+        function updateScoreboard(scores) {
+            const scoresTableBody = document.getElementById('scores-table-body');
+            scoresTableBody.innerHTML = '';
+            
+            // Sort players by score (descending)
+            const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            
+            sortedScores.forEach(([player, score], index) => {
+                const tr = document.createElement('tr');
+                
+                if (player === username) {
+                    tr.className = 'table-primary';
+                }
+                
+                tr.innerHTML = `
+                    <td>${player}</td>
+                    <td>${score}</td>
+                `;
+                
+                scoresTableBody.appendChild(tr);
+            });
+        }
+        
+        function startNextRoundCountdown(nextPlayer) {
+            let progress = 0;
+            const progressBar = document.getElementById('next-round-progress');
+            
+            const interval = setInterval(() => {
+                progress += 12.5;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // Reset UI for next round
+                    resultsDisplay.style.display = 'none';
+                    progressBar.style.width = '0%';
+                    
+                    // Check if it's your turn
+                    if (nextPlayer === username) {
+                        topicSelection.style.display = 'block';
+                    } else {
+                        const waitingDiv = document.createElement('div');
+                        waitingDiv.id = 'waiting-for-topic';
+                        waitingDiv.className = 'text-center my-5';
+                        waitingDiv.innerHTML = `
+                            <h3>Waiting for ${nextPlayer} to select a topic...</h3>
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        `;
+                        document.querySelector('.card-body').appendChild(waitingDiv);
+                    }
+                }
+            }, 1000); // 15 seconds total countdown (50ms * 100 steps)
+        }
     </script>
     <script>
     document.addEventListener("click", function() {
