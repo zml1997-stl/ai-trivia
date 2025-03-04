@@ -9,15 +9,14 @@
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
-   <audio id="background-music" autoplay muted>
-    <source id="audio-source" src="{{ url_for('static', filename='music1.mp3') }}" type="audio/mpeg">
+   <audio id="background-music" autoplay loop muted>
+    <source src="{{ url_for('static', filename='music.mp3') }}" type="audio/mpeg">
 </audio>
-
 <!-- Play/Pause Buttons -->
 <div class="text-center my-3">
-    <button id="playButton" class="btn btn-primary">Play</button>
-    <button id="pauseButton" class="btn btn-secondary">Pause</button>
-</div> 
+    <button id="playButton" class="btn btn-primary">Play Music</button>
+    <button id="pauseButton" class="btn btn-secondary">Pause Music</button>
+</div>
     <div class="container">
         <div class="row justify-content-center mt-3">
             <div class="col-lg-8">
@@ -566,42 +565,7 @@
         document.getElementById("background-music").muted = false;
     }, { once: true });  // Runs only once on first user interaction
 </script>
-   <script>
-        // Function to show the button
-        function showLeaveButton() {
-            document.getElementById("leave-game-container").style.display = "block";
-        }
-
-        // Function to hide the button
-        function hideLeaveButton() {
-            document.getElementById("leave-game-container").style.display = "none";
-        }
-
-        // Example: Call the function after a timeout (you can trigger based on some event in your game)
-        setTimeout(showLeaveButton, 2000); // Show button after 2 seconds
-        // setTimeout(hideLeaveButton, 5000); // Hide button after 5 seconds (example)
-    </script> 
- <script>
-    const songs = [
-        "{{ url_for('static', filename='music1.mp3') }}",
-        "{{ url_for('static', filename='music2.mp3') }}",
-        "{{ url_for('static', filename='music3.mp3') }}"
-    ];
-
-    let currentSongIndex = 0;
-    const audioElement = document.getElementById("background-music");
-    const audioSource = document.getElementById("audio-source");
-    const playButton = document.getElementById("playButton");
-    const pauseButton = document.getElementById("pauseButton");
-
-    // Function to change the song when one ends
-    audioElement.addEventListener("ended", function() {
-        currentSongIndex = (currentSongIndex + 1) % songs.length; // Loop through songs
-        audioSource.src = songs[currentSongIndex];
-        audioElement.load();
-        audioElement.play();
-    });
-
+<script>
     // Play button functionality
     playButton.addEventListener("click", function() {
         audioElement.muted = false; // Unmute if muted
@@ -619,6 +583,6 @@
             console.log("Autoplay blocked. User interaction required.");
         });
     });
-</script>   
+</script>
 </body>
 </html>
