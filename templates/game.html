@@ -566,19 +566,26 @@
     }, { once: true });  // Runs only once on first user interaction
 </script>
 <script>
-    // Play button functionality
-    playButton.addEventListener("click", function() {
-        audioElement.muted = false; // Unmute if muted
-        audioElement.play();
-    });
+    // Ensure the audio element is defined
+    const audioElement = new Audio('your-audio-file-path.mp3'); // Replace with your audio file path
 
-    // Pause button functionality
-    pauseButton.addEventListener("click", function() {
-        audioElement.pause();
-    });
-
-    // Ensure autoplay works if the browser blocks it
+    // Select the buttons after DOM is fully loaded
     document.addEventListener("DOMContentLoaded", function() {
+        const playButton = document.getElementById("playButton");
+        const pauseButton = document.getElementById("pauseButton");
+
+        // Play button functionality
+        playButton.addEventListener("click", function() {
+            audioElement.muted = false; // Unmute if muted
+            audioElement.play();
+        });
+
+        // Pause button functionality
+        pauseButton.addEventListener("click", function() {
+            audioElement.pause();
+        });
+
+        // Ensure autoplay works if the browser blocks it
         audioElement.play().catch(() => {
             console.log("Autoplay blocked. User interaction required.");
         });
