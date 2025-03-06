@@ -531,33 +531,40 @@
             let progress = 0;
             const progressBar = document.getElementById('next-round-progress');
             
-            const interval = setInterval(() => {
-                progress += 12.5;
-                progressBar.style.width = progress + '%';
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    // Reset UI for next round
-                    resultsDisplay.style.display = 'none';
-                    progressBar.style.width = '0%';
-                    
-                    // Check if it's your turn
-                    if (nextPlayer === username) {
-                        topicSelection.style.display = 'block';
-                    } else {
-                        const waitingDiv = document.createElement('div');
-                        waitingDiv.id = 'waiting-for-topic';
-                        waitingDiv.className = 'text-center my-5';
-                        waitingDiv.innerHTML = `
-                            <h3>Waiting for ${nextPlayer} to select a topic...</h3>
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        `;
-                        document.querySelector('.card-body').appendChild(waitingDiv);
-                    }
+            // Ensure the progress bar starts empty
+            progressBar.style.width = '0%';
+            
+            // Set a smooth transition effect
+            progressBar.style.transition = 'width 15s linear';
+            
+            // Start loading
+            setTimeout(() => {
+                progressBar.style.width = '100%';
+            }, 100);
+            
+            // Reset UI when loading completes
+            setTimeout(() => {
+                progressBar.style.width = '0%';
+                progressBar.style.transition = 'none'; // Remove transition for reset
+            
+                resultsDisplay.style.display = 'none';
+            
+                // Check if it's your turn
+                if (nextPlayer === username) {
+                    topicSelection.style.display = 'block';
+                } else {
+                    const waitingDiv = document.createElement('div');
+                    waitingDiv.id = 'waiting-for-topic';
+                    waitingDiv.className = 'text-center my-5';
+                    waitingDiv.innerHTML = `
+                        <h3>Waiting for ${nextPlayer} to select a topic...</h3>
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    `;
+                    document.querySelector('.card-body').appendChild(waitingDiv);
                 }
-            }, 1000); // 15 seconds total countdown (50ms * 100 steps)
+            }, 15000); // 15 seconds total countdown (50ms * 100 steps)
         }
     </script>
     <script>
