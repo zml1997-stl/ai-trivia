@@ -76,7 +76,7 @@ body {
     width: 0%;
     height: 20px; /* Adjust as needed */
     background-color: #007bff; /* Bootstrap primary color */
-    transition: width 15s linear;
+    transition: width 10s linear;
 }
 
 /* Scoreboard */
