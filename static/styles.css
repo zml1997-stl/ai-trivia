@@ -7,6 +7,7 @@ body {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 .card-header {
@@ -66,17 +67,19 @@ body {
 .progress {
     height: 20px;
     border-radius: 10px;
+    overflow: hidden;
+    background: #e9ecef;
 }
 
 .progress-bar {
-    transition: width 0.5s ease-in-out;
+    transition: width 1s ease-in-out;
+    animation: progressPulse 1.5s infinite;
 }
 
-#progress-bar {
-    width: 0%;
-    height: 20px; /* Adjust as needed */
-    background-color: #007bff; /* Bootstrap primary color */
-    transition: width 10s linear;
+@keyframes progressPulse {
+    0% { background-color: #007bff; }
+    50% { background-color: #0056b3; }
+    100% { background-color: #007bff; }
 }
 
 /* Scoreboard */
@@ -141,5 +144,86 @@ body {
     .list-group-item {
         font-size: 0.9rem;
         padding: 0.5rem 0.75rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+#topic-selection, #question-display, #results-display, #waiting-lobby {
+    animation: slideUp 0.5s ease-out;
+}
+
+.btn-primary, .btn-success {
+    animation: bounce 0.3s ease-in-out;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover, .btn-success:hover {
+    transform: scale(1.05);
+}
+
+/* Music Player Styling */
+#music-player {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #007bff, #00c4cc);
+    padding: 10px 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#music-select {
+    padding: 5px;
+    border-radius: 5px;
+    border: none;
+    background: white;
+    cursor: pointer;
+}
+
+#volume-control {
+    width: 100px;
+    accent-color: #007bff;
+}
+
+#mute-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#mute-toggle.muted {
+    color: #ff4d4d;
+}
+
+/* Responsive Adjustments for Music Player */
+@media (max-width: 576px) {
+    #music-player {
+        width: 90%;
+        padding: 8px;
+        flex-direction: column;
+        gap: 10px;
     }
 }
