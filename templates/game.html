@@ -177,7 +177,8 @@
         let timeLeft = 30;
         let selectedAnswer = null;
         const emojis = ['😀', '😂', '🤓', '😎', '🎉', '🚀', '🌟', '🍕', '🎵', '🐱'];
-        
+        let emojiMap = {};
+
         // DOM elements
         const waitingLobby = document.getElementById('waiting-lobby');
         const topicSelection = document.getElementById('topic-selection');
@@ -211,6 +212,10 @@
             });
             
             socket.on('player_joined', function(data) {
+                // Assign emojis when a player joins
+                if (!emojiMap[data.username]) {
+                    emojiMap[data.username] = emojis[Math.floor(Math.random() * emojis.length)];
+                }
                 updatePlayerList(data.players);
             });
             
@@ -361,7 +366,7 @@
                 
                 if (player === username) {
                     li.className += ' list-group-item-primary';
-                    li.innerHTML += ' <span class="badge bg-primary">You</span>';
+                    li.innerHTML += ' <span class="badge bg-info">You</span>';
                 }
                 
                 playerList.appendChild(li);
@@ -502,12 +507,6 @@
             scoresTableBody.innerHTML = '';
             
             const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-            const emojiMap = {};
-            sortedScores.forEach(([player], index) => {
-                if (!emojiMap[player]) {
-                    emojiMap[player] = emojis[Math.floor(Math.random() * emojis.length)];
-                }
-            });
             
             sortedScores.forEach(([player, score], index) => {
                 const tr = document.createElement('tr');
