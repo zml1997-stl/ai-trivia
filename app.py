@@ -15,9 +15,9 @@ from datetime import datetime, timedelta
 
 # List of random trivia topics
 RANDOM_TOPICS = [
-    "3rd grade math", "Business", "2010s music", "80s nostalgia", "Famous inventions","World history", "Mythology", "Animal kingdom", "Space exploration", "Famous authors", 
-    "Food and cuisine", "Famous landmarks", "Olympic history", "Pop culture", "Famous movie quotes", 
-    "Geography", "Superheroes", "Modern art", "Scientific discoveries", "Historical events", 
+    "3rd grade math", "Business", "2010s music", "80s nostalgia", "Famous inventions", "World history", "Mythology", "Animal kingdom", 
+    "Space exploration", "Famous authors", "Food and cuisine", "Famous landmarks", "Olympic history", "Pop culture", 
+    "Famous movie quotes", "Geography", "Superheroes", "Modern art", "Scientific discoveries", "Historical events", 
     "US presidents", "Fashion trends", "Classic literature", "Broadway musicals", "Medical breakthroughs", 
     "Ancient civilizations", "Video game history", "Technology innovations", "Sports trivia", "Famous paintings", 
     "Iconic TV shows", "Music festivals", "World religions", "Presidents of other countries", "Film directors", 
@@ -74,7 +74,6 @@ RANDOM_TOPICS = [
     "Ancient libraries", "Mythological heroes", "Endangered species", "World War I leaders", "The Great Fire of London", 
     "Classic punk bands", "Gold Rush history", "The Spanish Inquisition", "History of skateboarding", "History of chocolate", 
     "History of theater", "The art of brewing", "The history of toys and games"
-    # ... (rest of the topics remain unchanged)
 ]
 
 def generate_game_id():
@@ -82,7 +81,7 @@ def generate_game_id():
         game_id = ''.join(random.choices(string.ascii_uppercase, k=4))
         if game_id not in games:
             return game_id
-            
+
 # Load environment variables
 load_dotenv()
 
@@ -140,7 +139,8 @@ def create_game():
         'current_question': None,
         'answers': {},
         'scores': {username: 0},
-        'question_start_time': None
+        'question_start_time': None,
+        'questions_asked': []
     }
     
     session['game_id'] = game_id
@@ -241,6 +241,7 @@ def handle_join_game_room(data):
     if game_id in games and username in games[game_id]['players']:
         games[game_id].setdefault('disconnected', set()).discard(username)
         join_room(game_id)
+        print(f"Player {username} joined room {game_id}")
         emit('player_joined', {'username': username, 'players': games[game_id]['players']}, to=game_id)
 
 @socketio.on('start_game')
@@ -248,15 +249,19 @@ def handle_start_game(data):
     game_id = data.get('game_id')
     username = data.get('username')
     
+    print(f"Received start_game from {username} for game {game_id}")
     if game_id in games and username == games[game_id]['host'] and games[game_id]['status'] == 'waiting':
         games[game_id]['status'] = 'in_progress'
         current_player = games[game_id]['players'][games[game_id]['current_player_index']]
+        print(f"Game started, current player: {current_player}")
         
         emit('game_started', {
             'current_player': current_player,
             'players': games[game_id]['players'],
             'scores': games[game_id]['scores']
         }, to=game_id)
+    else:
+        print(f"Start game failed: {username} is not host or game status is {games[game_id]['status'] if game_id in games else 'not found'}")
 
 def normalize_answer(answer):
     return re.sub(r'\s+', ' ', answer.strip().lower())
@@ -267,6 +272,7 @@ def handle_select_topic(data):
     username = data.get('username')
     topic = data.get('topic')
 
+    print(f"Received select_topic from {username} for game {game_id}, topic: {topic}")
     if (game_id in games and 
         username in games[game_id]['players'] and 
         games[game_id]['status'] == 'in_progress' and
@@ -276,7 +282,6 @@ def handle_select_topic(data):
             games[game_id]['questions_asked'] = []
 
         max_attempts = 5
-
         for _ in range(max_attempts):
             if not topic:
                 topic = random.choice(RANDOM_TOPICS)
@@ -291,7 +296,6 @@ def handle_select_topic(data):
             duplicate_found = False
             for prev_question, prev_answer in games[game_id]['questions_asked']:
                 normalized_prev_answer = normalize_answer(prev_answer)
-
                 if normalized_answer == normalized_prev_answer or question_text == prev_question:
                     duplicate_found = True
                     break
@@ -302,6 +306,7 @@ def handle_select_topic(data):
                 games[game_id]['answers'] = {}
                 games[game_id]['question_start_time'] = datetime.now()
 
+                print(f"Question generated for {game_id}: {question_text}")
                 emit('question_ready', {
                     'question': question_data['question'],
                     'options': question_data['options'],
@@ -310,6 +315,8 @@ def handle_select_topic(data):
                 return
 
         emit('error', {'message': "Couldn't generate a unique question. Try another topic."}, to=game_id)
+    else:
+        print(f"Select topic failed: {username} is not current player or game status is {games[game_id]['status'] if game_id in games else 'not found'}")
 
 @socketio.on('submit_answer')
 def handle_submit_answer(data):
@@ -317,6 +324,7 @@ def handle_submit_answer(data):
     username = data.get('username')
     answer = data.get('answer')
     
+    print(f"Received submit_answer from {username} for game {game_id}, answer: {answer}")
     if (game_id in games and 
         username in games[game_id]['players'] and 
         games[game_id]['status'] == 'in_progress' and
@@ -361,6 +369,7 @@ def handle_disconnect():
         if username in game['players']:
             game.setdefault('disconnected', set()).add(username)
             emit('player_disconnected', {'username': username}, to=game_id)
+            print(f"Player {username} disconnected from game {game_id}")
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
