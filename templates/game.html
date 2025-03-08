@@ -17,11 +17,11 @@
         <div class="row justify-content-center mt-3">
             <div class="col-lg-8">
                 <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <h2 class="mb-0">AI Trivia Game</h2>
                             <div>
-                                <span class="badge bg-info">Game ID: <span id="game-id-display">{{ game_id }}</span></span>
+                                <span class="badge">Game ID: <span id="game-id-display">{{ game_id }}</span></span>
                             </div>
                         </div>
                     </div>
@@ -38,7 +38,7 @@
                                 </ul>
                             </div>
                             {% if is_host %}
-                            <button id="start-game-btn" class="btn btn-lg btn-success">Start Game</button>
+                            <button id="start-game-btn" class="btn btn-lg">Start Game</button>
                             {% else %}
                             <p>Waiting for host to start the game...</p>
                             {% endif %}
@@ -52,18 +52,18 @@
                                 <input type="text" id="topic-input" class="form-control form-control-lg" placeholder="Enter a topic (e.g., Science, History, Movies)">
                             </div>
                             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                                <button id="submit-topic-btn" class="btn btn-primary btn-lg">Submit Topic</button>
-                                <button id="random-topic-btn" class="btn btn-secondary btn-lg">Random Topic</button>
+                                <button id="submit-topic-btn" class="btn btn-lg">Submit Topic</button>
+                                <button id="random-topic-btn" class="btn btn-lg">Random Topic</button>
                             </div>
                         </div>
                         
                         <!-- Question Display -->
                         <div id="question-display" style="display: none;">
                             <div class="text-center mb-4">
-                                <span class="badge bg-secondary mb-2">Topic: <span id="topic-display"></span></span>
+                                <span class="badge mb-2">Topic: <span id="topic-display"></span></span>
                                 <h3 id="question-text" class="mb-3"></h3>
                                 <div class="progress mb-3">
-                                    <div id="timer-progress" class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
+                                    <div id="timer-progress" class="progress-bar" role="progressbar" style="width: 100%"></div>
                                 </div>
                             </div>
                             
@@ -77,7 +77,7 @@
                                         <button id="option-d" class="list-group-item list-group-item-action">D) <span id="option-d-text"></span></button>
                                     </div>
                                 </div>
-                                <button id="submit-answer-btn" class="btn btn-primary btn-lg">Submit Answer</button>
+                                <button id="submit-answer-btn" class="btn btn-lg">Submit Answer</button>
                             </div>
                             
                             <div class="waiting-for-answers mt-4" style="display: none;">
@@ -96,7 +96,7 @@
                             <h3 class="text-center mb-4">Round Results</h3>
                             
                             <div class="card mb-4">
-                                <div class="card-header bg-info">
+                                <div class="card-header">
                                     <h4 class="mb-0">Correct Answer</h4>
                                 </div>
                                 <div class="card-body">
@@ -106,7 +106,7 @@
                             </div>
                             
                             <div class="card mb-4">
-                                <div class="card-header bg-light">
+                                <div class="card-header">
                                     <h4 class="mb-0">Player Answers</h4>
                                 </div>
                                 <div class="card-body">
@@ -120,7 +120,7 @@
                                 <p>Next round starting soon...</p>
                                 <p>It will be <span id="next-player" class="fw-bold"></span>'s turn to select a topic.</p>
                                 <div class="progress">
-                                    <div id="next-round-progress" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
+                                    <div id="next-round-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
                                 </div>
                             </div>
                         </div>
@@ -148,7 +148,7 @@
 
     <!-- Leave Game Button -->
     <div id="leave-game-container" class="text-center mb-3" style="display: none;">
-        <button id="leave-game-btn" class="btn btn-danger btn-lg">Leave Game</button>
+        <button id="leave-game-btn" class="btn btn-lg">Leave Game</button>
     </div>
 
     <!-- Music Icon and Controls -->
@@ -212,7 +212,6 @@
             });
             
             socket.on('player_joined', function(data) {
-                // Assign emojis when a player joins
                 if (!emojiMap[data.username]) {
                     emojiMap[data.username] = emojis[Math.floor(Math.random() * emojis.length)];
                 }
@@ -245,7 +244,6 @@
         }
         
         function setupEventListeners() {
-            // Start game button
             const startGameBtn = document.getElementById('start-game-btn');
             if (startGameBtn) {
                 startGameBtn.addEventListener('click', function() {
@@ -256,7 +254,6 @@
                 });
             }
             
-            // Submit topic button
             document.getElementById('submit-topic-btn').addEventListener('click', function() {
                 const topic = document.getElementById('topic-input').value.trim();
                 if (topic) {
@@ -272,7 +269,7 @@
                     loadingDiv.className = 'text-center my-5';
                     loadingDiv.innerHTML = `
                         <h3>Generating Question...</h3>
-                        <div class="spinner-border text-primary" role="status">
+                        <div class="spinner-border" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     `;
@@ -280,7 +277,6 @@
                 }
             });
 
-            // Random topic button
             document.getElementById('random-topic-btn').addEventListener('click', function() {
                 socket.emit('select_topic', {
                     game_id: gameId,
@@ -294,14 +290,13 @@
                 loadingDiv.className = 'text-center my-5';
                 loadingDiv.innerHTML = `
                     <h3>Generating Question...</h3>
-                    <div class="spinner-border text-primary" role="status">
+                    <div class="spinner-border" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 `;
                 document.querySelector('.card-body').appendChild(loadingDiv);
             });
             
-            // Answer selection buttons
             document.getElementById('option-a').addEventListener('click', function() {
                 selectAnswer('A');
             });
@@ -315,7 +310,6 @@
                 selectAnswer('D');
             });
 
-            // Submit answer button
             document.getElementById('submit-answer-btn').addEventListener('click', function() {
                 if (selectedAnswer) {
                     socket.emit('submit_answer', {
@@ -330,12 +324,10 @@
                 }
             });
 
-            // Leave game button
             document.getElementById('leave-game-btn').addEventListener('click', function() {
                 window.location.href = '/';
             });
 
-            // Music icon toggle
             musicIcon.addEventListener('click', function() {
                 musicControls.classList.toggle('show');
             });
@@ -366,7 +358,7 @@
                 
                 if (player === username) {
                     li.className += ' list-group-item-primary';
-                    li.innerHTML += ' <span class="badge bg-info">You</span>';
+                    li.innerHTML += ' <span class="badge">You</span>';
                 }
                 
                 playerList.appendChild(li);
@@ -381,7 +373,7 @@
             
             if (data.current_player === username) {
                 topicSelection.style.display = 'block';
-                topicInput.value = ''; // Clear topic input
+                topicInput.value = '';
             } else {
                 startTriviaFacts();
                 const waitingDiv = document.createElement('div');
@@ -389,7 +381,7 @@
                 waitingDiv.className = 'text-center my-5';
                 waitingDiv.innerHTML = `
                     <h3>Waiting for ${data.current_player} to select a topic...</h3>
-                    <div class="spinner-border text-primary" role="status">
+                    <div class="spinner-border" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 `;
@@ -542,7 +534,7 @@
             
                 if (nextPlayer === username) {
                     topicSelection.style.display = 'block';
-                    topicInput.value = ''; // Clear topic input
+                    topicInput.value = '';
                 } else {
                     startTriviaFacts();
                     const waitingDiv = document.createElement('div');
@@ -550,7 +542,7 @@
                     waitingDiv.className = 'text-center my-5';
                     waitingDiv.innerHTML = `
                         <h3>Waiting for ${nextPlayer} to select a topic...</h3>
-                        <div class="spinner-border text-primary" role="status">
+                        <div class="spinner-border" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     `;
@@ -559,7 +551,6 @@
             }, 10000);
         }
 
-        // Scrolling Trivia Facts
         const triviaFactsList = [
             "The shortest war in history lasted 38 minutes.",
             "Honey never spoils; archaeologists found edible honey in ancient Egyptian tombs.",
@@ -574,10 +565,9 @@
             setInterval(() => {
                 triviaFacts.innerHTML = `<span>${triviaFactsList[index]}</span>`;
                 index = (index + 1) % triviaFactsList.length;
-            }, 3000); // Change fact every 3 seconds
+            }, 3000);
         }
 
-        // Music Player Controls
         const audioElement = document.getElementById("background-music");
         const musicSelect = document.getElementById("music-select");
         const volumeControl = document.getElementById("volume-control");
