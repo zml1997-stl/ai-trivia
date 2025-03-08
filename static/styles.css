@@ -397,6 +397,7 @@ body {
     overflow: hidden;
     white-space: nowrap;
     animation: scrollText 15s linear infinite;
+    z-index: 500; /* Ensure it stays above other elements */
 }
 
 @keyframes scrollText {
@@ -482,4 +483,11 @@ body {
         font-size: 1.2rem;
         padding: 0.8rem 2rem;
     }
+}
+
+/* Ensure waiting elements are visible */
+#waiting-for-topic, #waiting-lobby {
+    z-index: 1000;
+    position: relative;
+    visibility: visible !important;
 }
