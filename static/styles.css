@@ -1,6 +1,7 @@
 body {
     background-color: #f8f9fa;
     padding-bottom: 2rem;
+    position: relative;
 }
 
 .card {
@@ -92,6 +93,16 @@ body {
     padding: 0.75rem;
 }
 
+#scoreboard td:first-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-emoji {
+    font-size: 1.2rem;
+}
+
 /* Game Buttons */
 .btn-lg {
     font-size: 1.25rem;
@@ -145,6 +156,10 @@ body {
         font-size: 0.9rem;
         padding: 0.5rem 0.75rem;
     }
+
+    .player-emoji {
+        font-size: 1rem;
+    }
 }
 
 /* Animations */
@@ -177,19 +192,49 @@ body {
 }
 
 /* Music Player Styling */
-#music-player {
+#music-icon {
     position: fixed;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 20px;
     background: linear-gradient(135deg, #007bff, #00c4cc);
-    padding: 10px 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: transform 0.2s;
+}
+
+#music-icon:hover {
+    transform: scale(1.1);
+}
+
+#music-icon i {
+    color: white;
+    font-size: 1.5rem;
+}
+
+#music-controls {
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    background: rgba(0, 123, 255, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    backdrop-filter: blur(5px);
+}
+
+#music-controls.show {
+    display: flex;
 }
 
 #music-select {
@@ -218,12 +263,46 @@ body {
     color: #ff4d4d;
 }
 
+/* Scrolling Trivia Facts */
+#trivia-facts {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #333;
+    font-size: 1.1rem;
+    overflow: hidden;
+    white-space: nowrap;
+    animation: scrollText 15s linear infinite;
+}
+
+@keyframes scrollText {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+#trivia-facts span {
+    display: inline-block;
+    padding: 0 20px;
+}
+
 /* Responsive Adjustments for Music Player */
 @media (max-width: 576px) {
-    #music-player {
-        width: 90%;
-        padding: 8px;
-        flex-direction: column;
-        gap: 10px;
+    #music-icon {
+        bottom: 10px;
+        right: 10px;
+        width: 35px;
+        height: 35px;
+    }
+
+    #music-controls {
+        bottom: 50px;
+        right: 10px;
+        padding: 10px;
+    }
+
+    #trivia-facts {
+        font-size: 0.9rem;
     }
 }
