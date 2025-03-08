@@ -9,14 +9,9 @@
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
-   <audio id="background-music" autoplay loop muted>
-    <source src="{{ url_for('static', filename='music.mp3') }}" type="audio/mpeg">
-</audio>
-<!-- Play/Pause Buttons -->
-<div class="text-center my-3">
-    <button id="playButton" class="btn btn-primary">Play Music</button>
-    <button id="pauseButton" class="btn btn-secondary">Pause Music</button>
-</div>
+    <audio id="background-music" autoplay loop>
+        <source src="{{ url_for('static', filename='music1.mp3') }}" type="audio/mpeg">
+    </audio>
     <div class="container">
         <div class="row justify-content-center mt-3">
             <div class="col-lg-8">
@@ -154,7 +149,18 @@
     <div id="leave-game-container" class="text-center mb-3" style="display: none;">
         <button id="leave-game-btn" class="btn btn-danger btn-lg">Leave Game</button>
     </div>
-    
+
+    <!-- Music Player -->
+    <div id="music-player">
+        <select id="music-select">
+            <option value="music1.mp3">Music 1</option>
+            <option value="music2.mp3">Music 2</option>
+            <option value="music3.mp3">Music 3</option>
+        </select>
+        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="1">
+        <button id="mute-toggle">🔊</button>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Game variables
@@ -217,7 +223,6 @@
                 showResults(data);
             });
 
-            // Add listener for random topic selection
             socket.on('random_topic_selected', function(data) {
                 document.getElementById('topic-input').value = data.topic;
             });
@@ -245,7 +250,6 @@
                         topic: topic
                     });
                     
-                    // Hide topic selection and show loading
                     topicSelection.style.display = 'none';
                     const loadingDiv = document.createElement('div');
                     loadingDiv.id = 'loading-question';
@@ -262,14 +266,12 @@
 
             // Random topic button
             document.getElementById('random-topic-btn').addEventListener('click', function() {
-                // Send empty topic to server
                 socket.emit('select_topic', {
                     game_id: gameId,
                     username: username,
                     topic: ''
                 });
                 
-                // Hide topic selection and show loading
                 topicSelection.style.display = 'none';
                 const loadingDiv = document.createElement('div');
                 loadingDiv.id = 'loading-question';
@@ -306,11 +308,8 @@
                         answer: selectedAnswer
                     });
                     
-                    // Disable the answer buttons and submit button
                     disableAnswerButtons();
                     document.getElementById('submit-answer-btn').disabled = true;
-                    
-                    // Show waiting for others
                     document.querySelector('.waiting-for-answers').style.display = 'block';
                 }
             });
@@ -323,7 +322,6 @@
         
         function selectAnswer(answer) {
             selectedAnswer = answer;
-            // Highlight the selected answer
             document.querySelectorAll('.list-group-item').forEach(button => {
                 button.classList.remove('active');
             });
@@ -355,15 +353,11 @@
         }
         
         function startGame(data) {
-            // Hide waiting lobby
             waitingLobby.style.display = 'none';
-            
-            // Show scoreboard and leave game button
             scoreboard.style.display = 'block';
             leaveGameContainer.style.display = 'block';
             updateScoreboard(data.scores);
             
-            // Check if it's your turn to select a topic
             if (data.current_player === username) {
                 topicSelection.style.display = 'block';
             } else {
@@ -381,25 +375,21 @@
         }
         
         function showQuestion(data) {
-            // Clear any loading or waiting elements
             const loadingEl = document.getElementById('loading-question');
             if (loadingEl) loadingEl.remove();
             
             const waitingEl = document.getElementById('waiting-for-topic');
             if (waitingEl) waitingEl.remove();
             
-            // Show question
             questionDisplay.style.display = 'block';
             document.getElementById('topic-display').textContent = data.topic;
             document.getElementById('question-text').textContent = data.question;
             
-            // Populate answer options
             document.getElementById('option-a-text').textContent = data.options[0];
             document.getElementById('option-b-text').textContent = data.options[1];
             document.getElementById('option-c-text').textContent = data.options[2];
             document.getElementById('option-d-text').textContent = data.options[3];
             
-            // Reset answer selection
             selectedAnswer = null;
             document.querySelectorAll('.list-group-item').forEach(button => {
                 button.classList.remove('active');
@@ -408,12 +398,10 @@
             document.getElementById('submit-answer-btn').disabled = false;
             document.querySelector('.waiting-for-answers').style.display = 'none';
             
-            // Reset answered players
             answeredPlayers.clear();
             document.getElementById('answered-players').innerHTML = '';
             document.getElementById('answer-progress').style.width = '0%';
             
-            // Start timer
             startTimer();
         }
         
@@ -428,11 +416,9 @@
                 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    // Automatically submit the selected answer if time runs out
                     if (selectedAnswer) {
                         document.getElementById('submit-answer-btn').click();
                     } else {
-                        // If no answer is selected, submit an empty answer
                         socket.emit('submit_answer', {
                             game_id: gameId,
                             username: username,
@@ -446,7 +432,6 @@
         function playerAnswered(playerName) {
             answeredPlayers.add(playerName);
             
-            // Update the list of players who answered
             const answeredPlayersList = document.getElementById('answered-players');
             answeredPlayersList.innerHTML = '';
             
@@ -457,24 +442,18 @@
                 answeredPlayersList.appendChild(li);
             });
             
-            // Update progress bar
             const playersCount = document.getElementById('player-list').childElementCount;
             const progress = (answeredPlayers.size / playersCount) * 100;
             document.getElementById('answer-progress').style.width = progress + '%';
         }
         
         function showResults(data) {
-            // Hide question display
             questionDisplay.style.display = 'none';
-            
-            // Show results
             resultsDisplay.style.display = 'block';
             
-            // Populate correct answer
             document.getElementById('correct-answer').textContent = data.correct_answer;
             document.getElementById('answer-explanation').textContent = data.explanation;
             
-            // Populate player answers
             const playerAnswersList = document.getElementById('player-answers');
             playerAnswersList.innerHTML = '';
             
@@ -494,13 +473,8 @@
                 playerAnswersList.appendChild(li);
             });
             
-            // Update next player info
             document.getElementById('next-player').textContent = data.next_player;
-            
-            // Update scoreboard
             updateScoreboard(data.scores);
-            
-            // Set up for next round
             startNextRoundCountdown(data.next_player);
         }
         
@@ -508,7 +482,6 @@
             const scoresTableBody = document.getElementById('scores-table-body');
             scoresTableBody.innerHTML = '';
             
-            // Sort players by score (descending)
             const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
             
             sortedScores.forEach(([player, score], index) => {
@@ -531,25 +504,18 @@
             let progress = 0;
             const progressBar = document.getElementById('next-round-progress');
             
-            // Ensure the progress bar starts empty
             progressBar.style.width = '0%';
-            
-            // Set a smooth transition effect
             progressBar.style.transition = 'width 10s linear';
             
-            // Start loading
             setTimeout(() => {
                 progressBar.style.width = '100%';
             }, 100);
             
-            // Reset UI when loading completes
             setTimeout(() => {
                 progressBar.style.width = '0%';
-                progressBar.style.transition = 'none'; // Remove transition for reset
-            
+                progressBar.style.transition = 'none';
                 resultsDisplay.style.display = 'none';
             
-                // Check if it's your turn
                 if (nextPlayer === username) {
                     topicSelection.style.display = 'block';
                 } else {
@@ -564,39 +530,30 @@
                     `;
                     document.querySelector('.card-body').appendChild(waitingDiv);
                 }
-            }, 10000); // 15 seconds total countdown (50ms * 100 steps)
+            }, 10000);
         }
-    </script>
-    <script>
-    document.addEventListener("click", function() {
-        document.getElementById("background-music").muted = false;
-    }, { once: true });  // Runs only once on first user interaction
-</script>
-<script>
-    // Ensure the audio element is defined
-    const audioElement = new Audio('your-audio-file-path.mp3'); // Replace with your audio file path
 
-    // Select the buttons after DOM is fully loaded
-    document.addEventListener("DOMContentLoaded", function() {
-        const playButton = document.getElementById("playButton");
-        const pauseButton = document.getElementById("pauseButton");
+        // Music Player Controls
+        const audioElement = document.getElementById("background-music");
+        const musicSelect = document.getElementById("music-select");
+        const volumeControl = document.getElementById("volume-control");
+        const muteToggle = document.getElementById("mute-toggle");
 
-        // Play button functionality
-        playButton.addEventListener("click", function() {
-            audioElement.muted = false; // Unmute if muted
+        musicSelect.addEventListener("change", function() {
+            const newSrc = "{{ url_for('static', filename='') }}" + this.value;
+            audioElement.src = newSrc;
             audioElement.play();
         });
 
-        // Pause button functionality
-        pauseButton.addEventListener("click", function() {
-            audioElement.pause();
+        volumeControl.addEventListener("input", function() {
+            audioElement.volume = this.value;
         });
 
-        // Ensure autoplay works if the browser blocks it
-        audioElement.play().catch(() => {
-            console.log("Autoplay blocked. User interaction required.");
+        muteToggle.addEventListener("click", function() {
+            audioElement.muted = !audioElement.muted;
+            this.classList.toggle("muted", audioElement.muted);
+            this.textContent = audioElement.muted ? "🔇" : "🔊";
         });
-    });
-</script>
+    </script>
 </body>
 </html>
