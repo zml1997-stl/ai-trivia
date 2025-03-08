@@ -1,8 +1,8 @@
 body {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: linear-gradient(135deg, #1A252F 0%, #0F1C26 50%, #0A141F 100%);
     padding-bottom: 2rem;
     position: relative;
-    color: #e0e7ff;
+    color: #D1D9E6; /* Lighter text for better readability */
     font-family: 'Arial', sans-serif;
     overflow-x: hidden;
 }
@@ -13,29 +13,29 @@ body {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     animation: fadeIn 0.5s ease-in-out;
 }
 
 .card-header {
     border-bottom: none;
     font-size: 1.5rem;
-    background: linear-gradient(90deg, #4ecca3, #2ab7ca);
-    color: #fff;
+    background: linear-gradient(90deg, #00C4B4, #00A3A3); /* Teal gradient from screenshot */
+    color: #FFFFFF; /* White for high contrast */
 }
 
 .badge {
     font-size: 1rem;
     padding: 0.5rem 0.75rem;
-    background-color: #4ecca3;
-    color: #fff;
+    background-color: #00C4B4;
+    color: #FFFFFF;
 }
 
 #question-text {
     font-size: 1.8rem;
     font-weight: 700;
     text-align: center;
-    color: #e0e7ff;
+    color: #E0E7FF; /* Lighter text for readability */
 }
 
 .waiting-for-answers {
@@ -43,7 +43,7 @@ body {
     padding: 1.5rem;
     border-radius: 15px;
     background: rgba(255, 255, 255, 0.05);
-    color: #b0c4de;
+    color: #D1D9E6; /* Improved contrast */
 }
 
 #results-display .card {
@@ -52,12 +52,12 @@ body {
 
 #correct-answer {
     font-weight: bold;
-    color: #4ecca3;
+    color: #00C4B4; /* Teal for correct answers */
     font-size: 1.5rem;
 }
 
 #answer-explanation {
-    color: #b0c4de;
+    color: #A0B4C7; /* Softer gray for explanations */
     font-style: italic;
 }
 
@@ -67,7 +67,7 @@ body {
     border-radius: 15px;
     background: rgba(255, 255, 255, 0.05);
     text-align: center;
-    color: #e0e7ff;
+    color: #D1D9E6;
 }
 
 /* Loading Spinner */
@@ -75,7 +75,7 @@ body {
     width: 4rem;
     height: 4rem;
     margin: 1.5rem auto;
-    color: #2ab7ca;
+    color: #00A3A3; /* Matching teal */
 }
 
 /* Progress Bar Styles */
@@ -89,13 +89,13 @@ body {
 .progress-bar {
     transition: width 1s ease-in-out;
     animation: progressPulse 1.5s infinite;
-    background: linear-gradient(90deg, #4ecca3, #2ab7ca);
+    background: linear-gradient(90deg, #00C4B4, #00A3A3);
 }
 
 @keyframes progressPulse {
-    0% { background: linear-gradient(90deg, #4ecca3, #2ab7ca); }
-    50% { background: linear-gradient(90deg, #2ab7ca, #4ecca3); }
-    100% { background: linear-gradient(90deg, #4ecca3, #2ab7ca); }
+    0% { background: linear-gradient(90deg, #00C4B4, #00A3A3); }
+    50% { background: linear-gradient(90deg, #00A3A3, #00C4B4); }
+    100% { background: linear-gradient(90deg, #00C4B4, #00A3A3); }
 }
 
 /* Scoreboard */
@@ -108,7 +108,7 @@ body {
 #scoreboard th,
 #scoreboard td {
     padding: 1rem;
-    color: #e0e7ff;
+    color: #E0E7FF; /* Brighter text for readability */
 }
 
 #scoreboard td:first-child {
@@ -119,22 +119,22 @@ body {
 
 .player-emoji {
     font-size: 1.5rem;
-    color: #4ecca3;
+    color: #00C4B4; /* Teal emoji */
 }
 
 /* Game Buttons */
 .btn-lg {
     font-size: 1.4rem;
     padding: 0.9rem 1.5rem;
-    background: linear-gradient(90deg, #4ecca3, #2ab7ca);
+    background: linear-gradient(90deg, #00C4B4, #00A3A3);
     border: none;
-    color: #fff;
+    color: #FFFFFF;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .btn-lg:hover {
     transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(78, 204, 163, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 196, 180, 0.5);
 }
 
 #leave-game-container {
@@ -147,14 +147,14 @@ body {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out, transform 0.2s;
     background: rgba(255, 255, 255, 0.05);
-    color: #e0e7ff;
+    color: #E0E7FF; /* Brighter text */
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .list-group-item.active {
-    background: linear-gradient(90deg, #4ecca3, #2ab7ca);
-    border-color: #4ecca3;
-    color: #fff;
+    background: linear-gradient(90deg, #00C4B4, #00A3A3);
+    border-color: #00C4B4;
+    color: #FFFFFF;
     transform: scale(1.02);
 }
 
@@ -166,7 +166,7 @@ body {
 .list-group-item.disabled {
     cursor: not-allowed;
     background: rgba(255, 255, 255, 0.03);
-    color: #6c757d;
+    color: #A0B4C7; /* Softer disabled text */
 }
 
 /* Responsive Adjustments */
@@ -229,7 +229,7 @@ body {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: linear-gradient(135deg, #4ecca3, #2ab7ca);
+    background: linear-gradient(135deg, #00C4B4, #00A3A3);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -247,7 +247,7 @@ body {
 }
 
 #music-icon i {
-    color: #fff;
+    color: #FFFFFF;
     font-size: 1.5rem;
 }
 
@@ -255,7 +255,7 @@ body {
     position: fixed;
     bottom: 70px;
     right: 20px;
-    background: rgba(78, 204, 163, 0.9);
+    background: rgba(0, 196, 180, 0.9);
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -276,25 +276,25 @@ body {
     border: none;
     background: rgba(255, 255, 255, 0.9);
     cursor: pointer;
-    color: #1a1a2e;
+    color: #1A252F;
 }
 
 #volume-control {
     width: 100px;
-    accent-color: #2ab7ca;
+    accent-color: #00A3A3;
 }
 
 #mute-toggle {
     background: none;
     border: none;
-    color: #fff;
+    color: #FFFFFF;
     font-size: 1.2rem;
     cursor: pointer;
     transition: color 0.2s;
 }
 
 #mute-toggle.muted {
-    color: #ff6b6b;
+    color: #FF6B6B;
 }
 
 /* Scrolling Trivia Facts */
@@ -304,7 +304,7 @@ body {
     left: 0;
     width: 100%;
     text-align: center;
-    color: #b0c4de;
+    color: #D1D9E6;
     font-size: 1.2rem;
     overflow: hidden;
     white-space: nowrap;
@@ -338,5 +338,59 @@ body {
 
     #trivia-facts {
         font-size: 1rem;
+    }
+}
+
+/* Home Page Specific Styles */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(135deg, #1A252F, #0A141F);
+    color: #E0E7FF;
+    padding: 2rem;
+    animation: fadeIn 1s ease-in-out;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #00C4B4;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero p {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    color: #D1D9E6;
+}
+
+.btn-start {
+    font-size: 1.5rem;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(90deg, #00C4B4, #00A3A3);
+    border: none;
+    color: #FFFFFF;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn-start:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 196, 180, 0.5);
+}
+
+@media (max-width: 576px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+    .hero p {
+        font-size: 1.1rem;
+    }
+    .btn-start {
+        font-size: 1.2rem;
+        padding: 0.8rem 2rem;
     }
 }
