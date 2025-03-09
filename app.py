@@ -1,5 +1,3 @@
-[file name]: app.py
-[file content begin]
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import os
 import uuid
@@ -12,10 +10,80 @@ import re
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import string
 import random
+import re
 from datetime import datetime, timedelta
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 
+# List of random trivia topics
+RANDOM_TOPICS = [
+    "3rd grade math", "Business", "2010s music", "80s nostalgia", "Famous inventions", 
+    "World history", "Mythology", "Animal kingdom", "Space exploration", "Famous authors", 
+    "Food and cuisine", "Famous landmarks", "Olympic history", "Pop culture", "Famous movie quotes", 
+    "Geography", "Superheroes", "Modern art", "Scientific discoveries", "Historical events", 
+    "US presidents", "Fashion trends", "Classic literature", "Broadway musicals", "Medical breakthroughs", 
+    "Ancient civilizations", "Video game history", "Technology innovations", "Sports trivia", "Famous paintings", 
+    "Iconic TV shows", "Music festivals", "World religions", "Presidents of other countries", "Film directors", 
+    "Musical instruments", "Historical figures", "90s cartoons", "Natural wonders", "Famous scientists", 
+    "Classic cars", "Environmental issues", "Art movements", "70s rock music", "Political scandals", 
+    "World capitals", "Winter holidays", "Dance styles", "Popular board games", "Famous photographers", 
+    "Architecture", "Classic literature adaptations", "Inventions by women", "World War II", "Famous TV hosts", 
+    "Famous duos in history", "Famous criminals", "Inventions in the 20th century", "Lost civilizations", "Space missions", 
+    "Languages", "Famous artists", "World sports tournaments", "Underwater exploration", "Famous beaches", 
+    "Political revolutions", "Famous explorers", "Wild West history", "The Renaissance", "Famous writers of the 20th century", 
+    "African history", "Historical wars", "Technology companies", "Global warming", "Ancient architecture", 
+    "Civil rights movements", "Favorite childhood snacks", "Legendary monsters and cryptids", "Historical novels", "Scientific theories", 
+    "Major historical treaties", "World fairs", "Golden Age of Hollywood", "Famous mathematicians", "Famous comedians", 
+    "Surrealist artists", "Unsolved mysteries", "World Trade history", "Chinese dynasties", "Ancient Egypt", 
+    "Music theory", "Wildlife conservation", "Famous political speeches", "Social movements", "Vintage TV shows", 
+    "Film noir", "Rock ‘n’ roll pioneers", "Hip-hop history", "Fashion designers", "Great explorers of the seas", 
+    "Major natural disasters", "Ballet history", "Horror movie icons", "Futurism", "Street art", 
+    "Political ideologies", "Nobel Prize winners", "Classical composers", "Modern philosophy", "Cold War", 
+    "World War I", "Civilizations of Mesoamerica", "Classic movie musicals", "Famous historical speeches", "The Enlightenment", 
+    "Dinosaurs", "Famous historical paintings", "Forensic science", "The American Revolution", "Inventions that changed the world", 
+    "Industrial Revolution", "Broadway legends", "Historic music genres", "Wonders of the Ancient World", "Native American history", 
+    "Prohibition", "Space telescopes", "Women in history", "Music videos", "Great scientific minds", 
+    "Early cinema", "Punk rock", "World food history", "Mythological creatures", "Comedy legends", 
+    "Early explorers", "Natural history museums", "Astronomy", "Ancient Rome", "Ancient Greece", 
+    "Invention of the airplane", "Nobel laureates in science", "Pirates", "Shakespearean plays", "Famous philosophers", 
+    "Art history", "Supernatural legends", "Circus history", "Comic book artists", "Classic literature quotes", 
+    "80s cartoons", "Famous murders", "Urban legends", "Extreme sports", "Music charts", 
+    "Historical diseases", "Fairytales and folklore", "Nobel Prize in Literature", "Victorian England", "Global protests", 
+    "The Great Depression", "Historical weapons", "Environmental movements", "Christmas traditions", "Modern dance", 
+    "Musical genres from the 60s", "Famous athletes of the 20th century", "Space technology", "African American history", "Famous female politicians", 
+    "Renaissance painters", "Gender equality movements", "Rock festivals", "History of photography", "Monarchy history", 
+    "Comic book movies", "Ancient rituals", "Steam engines", "Victorian fashion", "Nature documentaries", 
+    "World folk music", "Famous historical documents", "Classic board games", "Inventions of the 21st century", "Hidden treasures", 
+    "Ancient texts and manuscripts", "Famous food chefs", "Mid-century architecture", "Medieval kings and queens", "Famous sports teams", 
+    "US history", "Famous TV villains", "Bizarre laws around the world", "World mythologies", "Art exhibitions", 
+    "Scientific explorations", "Renaissance festivals", "Classic sci-fi literature", "Medieval knights", "International film festivals", 
+    "Music charts in the 70s", "The Silk Road", "Renaissance art", "Old Hollywood stars", "Political dynasties", 
+    "Ancient inventions", "Famous spies", "2000s fashion", "Famous libraries", "Color theory in art", 
+    "History of robotics", "Music producers", "Nobel Peace Prize winners", "Ancient philosophy", "Viking history", 
+    "Mysterious disappearances", "Famous art heists", "Ancient medicine", "Pirates of the Caribbean", "Early civilizations", 
+    "Famous historical novels", "Global economic history", "Archaeological discoveries", "Rock legends", "World capitals trivia", 
+    "Famous movie directors", "Animal migration", "History of the internet", "Famous television writers", "Famous cartoonists", 
+    "Famous philosophers of the 20th century", "Olympic athletes of all time", "Medieval architecture", "Music theory terms", "The Beatles", 
+    "Classical architecture", "Romanticism in art", "Internet culture", "2000s TV shows", "Military strategies in history", 
+    "The Great Wall of China", "Chinese philosophy", "Space exploration milestones", "History of banking", "Baroque art", 
+    "Beatles songs", "Famous space missions", "The Industrial Age", "Victorian novels", "Pop culture references", 
+    "Modern superheroes", "American authors", "90s music", "Global cities", "Early computer science", 
+    "Classic cinema icons", "First ladies of the United States", "Women in entertainment", "Famous classical operas", "The Salem witch trials", 
+    "Ancient Chinese inventions", "Nobel Prize in Peace", "Famous fashion icons", "Renaissance artists", "Jazz history", 
+    "Golden Age of Television", "Famous historical diaries", "Famous World War II generals", "90s video games", "Shakespeare's works", 
+    "Classic board game design", "History of circus performances", "Mountaineering expeditions", "Ancient Rome vs. Ancient Greece", "Famous mathematicians of history", 
+    "The evolution of the internet", "Renowned chefs and their dishes", "Black History Month trivia", "Ancient Egyptian gods", "Legendary actors and actresses", 
+    "Feminism in history", "Environmental disasters", "Music legends of the 60s", "History of the telephone", "Classic detective novels", 
+    "Ancient libraries", "Mythological heroes", "Endangered species", "World War I leaders", "The Great Fire of London", 
+    "Classic punk bands", "Gold Rush history", "The Spanish Inquisition", "History of skateboarding", "History of chocolate", 
+    "History of theater", "The art of brewing", "The history of toys and games"
+]
+
+def generate_game_id():
+    # Loop to avoid collisions in the unlikely event the ID already exists.
+    while True:
+        game_id = ''.join(random.choices(string.ascii_uppercase, k=4))
+        if game_id not in games:
+            return game_id
+            
 # Load environment variables
 load_dotenv()
 
@@ -25,37 +93,10 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
-
-# Configure PostgreSQL database
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# Database models
-class Game(db.Model):
-    id = db.Column(db.String(4), primary_key=True)
-    host = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.String(20), nullable=False, default='waiting')
-    current_player_index = db.Column(db.Integer, nullable=False, default=0)
-    current_question = db.Column(db.JSON)
-    question_start_time = db.Column(db.DateTime)
-
-class Player(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), nullable=False)
-    game_id = db.Column(db.String(4), db.ForeignKey('game.id'), nullable=False)
-    score = db.Column(db.Integer, nullable=False, default=0)
-
-class Question(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    game_id = db.Column(db.String(4), db.ForeignKey('game.id'), nullable=False)
-    question_text = db.Column(db.String(500), nullable=False)
-    answer = db.Column(db.String(200), nullable=False)
-    options = db.Column(db.JSON, nullable=False)
-    explanation = db.Column(db.String(500))
+# Game state storage
+games = {}
 
 # Helper functions for fuzzy matching
 def normalize_text(text):
@@ -90,15 +131,19 @@ def create_game():
     if not username:
         return redirect(url_for('index'))
     
-    game_id = ''.join(random.choices(string.ascii_uppercase, k=4))
-    new_game = Game(id=game_id, host=username)
-    db.session.add(new_game)
-    db.session.commit()
-
-    new_player = Player(username=username, game_id=game_id)
-    db.session.add(new_player)
-    db.session.commit()
-
+    game_id = generate_game_id()
+    games[game_id] = {
+        'host': username,
+        'players': [username],
+        'disconnected': set(),
+        'status': 'waiting',
+        'current_player_index': 0,
+        'current_question': None,
+        'answers': {},
+        'scores': {username: 0},
+        'question_start_time': None
+    }
+    
     session['game_id'] = game_id
     session['username'] = username
     
@@ -112,20 +157,18 @@ def join_game():
     if not username or not game_id:
         return redirect(url_for('index'))
     
-    game = Game.query.get(game_id)
-    if not game:
+    if game_id not in games:
         return "Game not found", 404
     
-    if game.status != 'waiting':
+    if games[game_id]['status'] != 'waiting':
         return "Game already in progress", 403
     
-    if len(Player.query.filter_by(game_id=game_id).all()) >= 10:
+    if len(games[game_id]['players']) >= 10:
         return "Game is full", 403
     
-    if not Player.query.filter_by(username=username, game_id=game_id).first():
-        new_player = Player(username=username, game_id=game_id)
-        db.session.add(new_player)
-        db.session.commit()
+    if username not in games[game_id]['players']:
+        games[game_id]['players'].append(username)
+        games[game_id]['scores'][username] = 0
     
     session['game_id'] = game_id
     session['username'] = username
@@ -134,15 +177,14 @@ def join_game():
 
 @app.route('/game/<game_id>')
 def game(game_id):
-    game = Game.query.get(game_id)
-    if not game:
+    if game_id not in games:
         return redirect(url_for('index'))
     
     username = session.get('username')
-    if not username or not Player.query.filter_by(username=username, game_id=game_id).first():
+    if not username or username not in games[game_id]['players']:
         return redirect(url_for('index'))
     
-    return render_template('game.html', game_id=game_id, username=username, is_host=(username == game.host))
+    return render_template('game.html', game_id=game_id, username=username, is_host=(username == games[game_id]['host']))
 
 def get_trivia_question(topic):
     try:
@@ -200,29 +242,25 @@ def handle_join_game_room(data):
     game_id = data.get('game_id')
     username = data.get('username')
     
-    game = Game.query.get(game_id)
-    if game and Player.query.filter_by(username=username, game_id=game_id).first():
+    if game_id in games and username in games[game_id]['players']:
+        # Remove from disconnected set if the user is rejoining.
+        games[game_id].setdefault('disconnected', set()).discard(username)
         join_room(game_id)
-        players = [player.username for player in Player.query.filter_by(game_id=game_id).all()]
-        emit('player_joined', {'username': username, 'players': players}, to=game_id)
+        emit('player_joined', {'username': username, 'players': games[game_id]['players']}, to=game_id)
 
 @socketio.on('start_game')
 def handle_start_game(data):
     game_id = data.get('game_id')
     username = data.get('username')
     
-    game = Game.query.get(game_id)
-    if game and username == game.host and game.status == 'waiting':
-        game.status = 'in_progress'
-        db.session.commit()
-
-        players = [player.username for player in Player.query.filter_by(game_id=game_id).all()]
-        current_player = players[game.current_player_index]
+    if game_id in games and username == games[game_id]['host'] and games[game_id]['status'] == 'waiting':
+        games[game_id]['status'] = 'in_progress'
+        current_player = games[game_id]['players'][games[game_id]['current_player_index']]
         
         emit('game_started', {
             'current_player': current_player,
-            'players': players,
-            'scores': {player.username: player.score for player in Player.query.filter_by(game_id=game_id).all()}
+            'players': games[game_id]['players'],
+            'scores': games[game_id]['scores']
         }, to=game_id)
 
 # Helper function to normalize the answer
@@ -236,11 +274,14 @@ def handle_select_topic(data):
     username = data.get('username')
     topic = data.get('topic')
 
-    game = Game.query.get(game_id)
-    if (game and 
-        Player.query.filter_by(username=username, game_id=game_id).first() and 
-        game.status == 'in_progress' and
-        game.players[game.current_player_index] == username):
+    if (game_id in games and 
+        username in games[game_id]['players'] and 
+        games[game_id]['status'] == 'in_progress' and
+        games[game_id]['players'][games[game_id]['current_player_index']] == username):
+
+        # Ensure the game has a set to track asked questions and answers
+        if 'questions_asked' not in games[game_id]:
+            games[game_id]['questions_asked'] = []
 
         max_attempts = 5  # Limit retries to avoid infinite loops
 
@@ -258,26 +299,19 @@ def handle_select_topic(data):
 
             # Check for duplicates using normalized answer and question content
             duplicate_found = False
-            for prev_question in Question.query.filter_by(game_id=game_id).all():
-                normalized_prev_answer = normalize_answer(prev_question.answer)
+            for prev_question, prev_answer in games[game_id]['questions_asked']:
+                normalized_prev_answer = normalize_answer(prev_answer)
 
                 # If both the question and answer are similar, skip this question
-                if normalized_answer == normalized_prev_answer or question_text == prev_question.question_text:
+                if normalized_answer == normalized_prev_answer or question_text == prev_question:
                     duplicate_found = True
                     break
 
             if not duplicate_found:
-                new_question = Question(
-                    game_id=game_id,
-                    question_text=question_text,
-                    answer=answer_text,
-                    options=question_data['options'],
-                    explanation=question_data['explanation']
-                )
-                db.session.add(new_question)
-                game.current_question = question_data
-                game.question_start_time = datetime.now()
-                db.session.commit()
+                games[game_id]['questions_asked'].append((question_text, answer_text))
+                games[game_id]['current_question'] = question_data
+                games[game_id]['answers'] = {}
+                games[game_id]['question_start_time'] = datetime.now()
 
                 emit('question_ready', {
                     'question': question_data['question'],
@@ -295,65 +329,57 @@ def handle_submit_answer(data):
     username = data.get('username')
     answer = data.get('answer')
     
-    game = Game.query.get(game_id)
-    if (game and 
-        Player.query.filter_by(username=username, game_id=game_id).first() and 
-        game.status == 'in_progress' and
-        game.current_question):
+    if (game_id in games and 
+        username in games[game_id]['players'] and 
+        games[game_id]['status'] == 'in_progress' and
+        games[game_id]['current_question']):
         
         # Check if time is up
-        time_elapsed = datetime.now() - game.question_start_time
+        time_elapsed = datetime.now() - games[game_id]['question_start_time']
         if time_elapsed.total_seconds() > 30:
             answer = None  # Mark as no answer submitted
         
         # Map the selected letter (A, B, C, D) to the corresponding option text
         if answer in ['A', 'B', 'C', 'D']:
             option_index = ord(answer) - ord('A')  # Convert A=0, B=1, C=2, D=3
-            answer = game.current_question['options'][option_index]
+            answer = games[game_id]['current_question']['options'][option_index]
         
-        # Update player's answer
-        player = Player.query.filter_by(username=username, game_id=game_id).first()
-        player.answer = answer
-        db.session.commit()
-
+        games[game_id]['answers'][username] = answer
         emit('player_answered', {'username': username}, to=game_id)
         
-        # Check if all players have answered
-        players = Player.query.filter_by(game_id=game_id).all()
-        if all(player.answer is not None for player in players):
-            correct_answer = game.current_question['answer']
+        # Check if all players (even disconnected ones) have answered.
+        if len(games[game_id]['answers']) == len(games[game_id]['players']):
+            correct_answer = games[game_id]['current_question']['answer']
             correct_players = []
             
-            for player in players:
-                if player.answer and is_close_enough(player.answer, correct_answer):
-                    correct_players.append(player.username)
-                    player.score += 1
-                    db.session.commit()
+            for player, player_answer in games[game_id]['answers'].items():
+                # Use fuzzy matching to determine if the answer is close enough.
+                if player_answer and is_close_enough(player_answer, correct_answer):
+                    correct_players.append(player)
+                    games[game_id]['scores'][player] += 1
             
-            # Update to the next player's turn
-            game.current_player_index = (game.current_player_index + 1) % len(players)
-            next_player = players[game.current_player_index].username
-            db.session.commit()
+            # Update to the next player's turn.
+            games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
+            next_player = games[game_id]['players'][games[game_id]['current_player_index']]
             
             emit('round_results', {
                 'correct_answer': correct_answer,
-                'explanation': game.current_question['explanation'],
-                'player_answers': {player.username: player.answer for player in players},
+                'explanation': games[game_id]['current_question']['explanation'],
+                'player_answers': games[game_id]['answers'],
                 'correct_players': correct_players,
                 'next_player': next_player,
-                'scores': {player.username: player.score for player in players}
+                'scores': games[game_id]['scores']
             }, to=game_id)
 
 @socketio.on('disconnect')
 def handle_disconnect():
     username = session.get('username')
-    game_id = session.get('game_id')
-    if username and game_id:
-        player = Player.query.filter_by(username=username, game_id=game_id).first()
-        if player:
+    # Instead of removing the user, mark them as disconnected.
+    for game_id, game in games.items():
+        if username in game['players']:
+            game.setdefault('disconnected', set()).add(username)
             emit('player_disconnected', {'username': username}, to=game_id)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=True)
-[file content end]
