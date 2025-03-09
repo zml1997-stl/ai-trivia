@@ -7,21 +7,25 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <audio id="background-music" autoplay loop>
-        <source src="{{ url_for('static', filename='music1.mp3') }}" type="audio/mpeg">
-    </audio>
+   <audio id="background-music" autoplay loop muted>
+    <source src="{{ url_for('static', filename='music.mp3') }}" type="audio/mpeg">
+</audio>
+<!-- Play/Pause Buttons -->
+<div class="text-center my-3">
+    <button id="playButton" class="btn btn-primary">Play Music</button>
+    <button id="pauseButton" class="btn btn-secondary">Pause Music</button>
+</div>
     <div class="container">
         <div class="row justify-content-center mt-3">
             <div class="col-lg-8">
                 <div class="card shadow">
-                    <div class="card-header">
+                    <div class="card-header bg-primary text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h2 class="mb-0">AI Trivia Game</h2>
                             <div>
-                                <span class="badge">Game ID: <span id="game-id-display">{{ game_id }}</span></span>
+                                <span class="badge bg-info">Game ID: <span id="game-id-display">{{ game_id }}</span></span>
                             </div>
                         </div>
                     </div>
@@ -38,7 +42,7 @@
                                 </ul>
                             </div>
                             {% if is_host %}
-                            <button id="start-game-btn" class="btn btn-lg">Start Game</button>
+                            <button id="start-game-btn" class="btn btn-lg btn-success">Start Game</button>
                             {% else %}
                             <p>Waiting for host to start the game...</p>
                             {% endif %}
@@ -49,22 +53,21 @@
                             <h3>Select a Topic</h3>
                             <p>It's your turn to choose a topic for the trivia question!</p>
                             <div class="mb-3">
-                                <label for="topic-input" class="form-label">Enter Topic</label>
-                                <input type="text" id="topic-input" class="form-control form-control-lg" placeholder="e.g., Science, History, Movies">
+                                <input type="text" id="topic-input" class="form-control form-control-lg" placeholder="Enter a topic (e.g., Science, History, Movies)">
                             </div>
                             <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                                <button id="submit-topic-btn" class="btn btn-lg">Submit Topic</button>
-                                <button id="random-topic-btn" class="btn btn-lg">Random Topic</button>
+                                <button id="submit-topic-btn" class="btn btn-primary btn-lg">Submit Topic</button>
+                                <button id="random-topic-btn" class="btn btn-secondary btn-lg">Random Topic</button>
                             </div>
                         </div>
                         
                         <!-- Question Display -->
                         <div id="question-display" style="display: none;">
                             <div class="text-center mb-4">
-                                <span class="badge mb-2">Topic: <span id="topic-display"></span></span>
+                                <span class="badge bg-secondary mb-2">Topic: <span id="topic-display"></span></span>
                                 <h3 id="question-text" class="mb-3"></h3>
                                 <div class="progress mb-3">
-                                    <div id="timer-progress" class="progress-bar" role="progressbar" style="width: 100%"></div>
+                                    <div id="timer-progress" class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
                                 </div>
                             </div>
                             
@@ -78,7 +81,7 @@
                                         <button id="option-d" class="list-group-item list-group-item-action">D) <span id="option-d-text"></span></button>
                                     </div>
                                 </div>
-                                <button id="submit-answer-btn" class="btn btn-lg">Submit Answer</button>
+                                <button id="submit-answer-btn" class="btn btn-primary btn-lg">Submit Answer</button>
                             </div>
                             
                             <div class="waiting-for-answers mt-4" style="display: none;">
@@ -97,7 +100,7 @@
                             <h3 class="text-center mb-4">Round Results</h3>
                             
                             <div class="card mb-4">
-                                <div class="card-header">
+                                <div class="card-header bg-info">
                                     <h4 class="mb-0">Correct Answer</h4>
                                 </div>
                                 <div class="card-body">
@@ -107,7 +110,7 @@
                             </div>
                             
                             <div class="card mb-4">
-                                <div class="card-header">
+                                <div class="card-header bg-light">
                                     <h4 class="mb-0">Player Answers</h4>
                                 </div>
                                 <div class="card-body">
@@ -121,12 +124,12 @@
                                 <p>Next round starting soon...</p>
                                 <p>It will be <span id="next-player" class="fw-bold"></span>'s turn to select a topic.</p>
                                 <div class="progress">
-                                    <div id="next-round-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                    <div id="next-round-progress" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Scoreboard -->
+                        <!-- Scoreboard (always visible once game starts) -->
                         <div id="scoreboard" class="mt-4" style="display: none;">
                             <h4>Scoreboard</h4>
                             <table class="table table-striped">
@@ -149,23 +152,9 @@
 
     <!-- Leave Game Button -->
     <div id="leave-game-container" class="text-center mb-3" style="display: none;">
-        <button id="leave-game-btn" class="btn btn-lg">Leave Game</button>
+        <button id="leave-game-btn" class="btn btn-danger btn-lg">Leave Game</button>
     </div>
-
-    <!-- Music Icon and Controls -->
-    <div id="music-icon">
-        <i class="fas fa-music"></i>
-    </div>
-    <div id="music-controls">
-        <select id="music-select">
-            <option value="music1.mp3">Music 1</option>
-            <option value="music2.mp3">Music 2</option>
-            <option value="music3.mp3">Music 3</option>
-        </select>
-        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="1">
-        <button id="mute-toggle">🔊</button>
-    </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Game variables
@@ -177,9 +166,7 @@
         let timerInterval;
         let timeLeft = 30;
         let selectedAnswer = null;
-        const emojis = ['😀', '😂', '🤓', '😎', '🎉', '🚀', '🌟', '🍕', '🎵', '🐱'];
-        let emojiMap = {};
-
+        
         // DOM elements
         const waitingLobby = document.getElementById('waiting-lobby');
         const topicSelection = document.getElementById('topic-selection');
@@ -188,18 +175,11 @@
         const scoreboard = document.getElementById('scoreboard');
         const leaveGameContainer = document.getElementById('leave-game-container');
         const timerProgress = document.getElementById('timer-progress');
-        const musicIcon = document.getElementById('music-icon');
-        const musicControls = document.getElementById('music-controls');
-        const topicInput = document.getElementById('topic-input');
-        const triviaFacts = document.createElement('div');
-        triviaFacts.id = 'trivia-facts';
-
+        
         // Connect to Socket.IO
         document.addEventListener('DOMContentLoaded', function() {
             connectToSocket();
             setupEventListeners();
-            document.querySelector('.card-body').prepend(triviaFacts);
-            console.log('DOM loaded, initializing game with gameId:', gameId, 'username:', username);
         });
         
         function connectToSocket() {
@@ -214,54 +194,40 @@
             });
             
             socket.on('player_joined', function(data) {
-                console.log('Player joined:', data);
-                if (!emojiMap[data.username]) {
-                    emojiMap[data.username] = emojis[Math.floor(Math.random() * emojis.length)];
-                }
                 updatePlayerList(data.players);
             });
             
             socket.on('player_left', function(data) {
-                console.log('Player left:', data);
                 updatePlayerList(data.players);
             });
             
             socket.on('game_started', function(data) {
-                console.log('Game started with data:', data);
                 startGame(data);
             });
             
             socket.on('question_ready', function(data) {
-                console.log('Question ready:', data);
                 showQuestion(data);
             });
             
             socket.on('player_answered', function(data) {
-                console.log('Player answered:', data);
                 playerAnswered(data.username);
             });
             
             socket.on('round_results', function(data) {
-                console.log('Round results:', data);
                 showResults(data);
             });
 
+            // Add listener for random topic selection
             socket.on('random_topic_selected', function(data) {
-                console.log('Random topic selected:', data);
                 document.getElementById('topic-input').value = data.topic;
-            });
-
-            socket.on('error', function(data) {
-                console.log('Error:', data);
-                alert(data.message);
             });
         }
         
         function setupEventListeners() {
+            // Start game button
             const startGameBtn = document.getElementById('start-game-btn');
             if (startGameBtn) {
                 startGameBtn.addEventListener('click', function() {
-                    console.log('Start game button clicked', { game_id: gameId, username: username });
                     socket.emit('start_game', {
                         game_id: gameId,
                         username: username
@@ -269,23 +235,24 @@
                 });
             }
             
+            // Submit topic button
             document.getElementById('submit-topic-btn').addEventListener('click', function() {
                 const topic = document.getElementById('topic-input').value.trim();
                 if (topic) {
-                    console.log('Submitting topic:', topic);
                     socket.emit('select_topic', {
                         game_id: gameId,
                         username: username,
                         topic: topic
                     });
                     
+                    // Hide topic selection and show loading
                     topicSelection.style.display = 'none';
                     const loadingDiv = document.createElement('div');
                     loadingDiv.id = 'loading-question';
                     loadingDiv.className = 'text-center my-5';
                     loadingDiv.innerHTML = `
                         <h3>Generating Question...</h3>
-                        <div class="spinner-border" role="status">
+                        <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     `;
@@ -293,27 +260,30 @@
                 }
             });
 
+            // Random topic button
             document.getElementById('random-topic-btn').addEventListener('click', function() {
-                console.log('Requesting random topic');
+                // Send empty topic to server
                 socket.emit('select_topic', {
                     game_id: gameId,
                     username: username,
                     topic: ''
                 });
                 
+                // Hide topic selection and show loading
                 topicSelection.style.display = 'none';
                 const loadingDiv = document.createElement('div');
                 loadingDiv.id = 'loading-question';
                 loadingDiv.className = 'text-center my-5';
                 loadingDiv.innerHTML = `
                     <h3>Generating Question...</h3>
-                    <div class="spinner-border" role="status">
+                    <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 `;
                 document.querySelector('.card-body').appendChild(loadingDiv);
             });
             
+            // Answer selection buttons
             document.getElementById('option-a').addEventListener('click', function() {
                 selectAnswer('A');
             });
@@ -327,33 +297,33 @@
                 selectAnswer('D');
             });
 
+            // Submit answer button
             document.getElementById('submit-answer-btn').addEventListener('click', function() {
                 if (selectedAnswer) {
-                    console.log('Submitting answer:', selectedAnswer);
                     socket.emit('submit_answer', {
                         game_id: gameId,
                         username: username,
                         answer: selectedAnswer
                     });
                     
+                    // Disable the answer buttons and submit button
                     disableAnswerButtons();
                     document.getElementById('submit-answer-btn').disabled = true;
+                    
+                    // Show waiting for others
                     document.querySelector('.waiting-for-answers').style.display = 'block';
                 }
             });
 
+            // Leave game button
             document.getElementById('leave-game-btn').addEventListener('click', function() {
                 window.location.href = '/';
-            });
-
-            musicIcon.addEventListener('click', function() {
-                musicControls.classList.toggle('show');
             });
         }
         
         function selectAnswer(answer) {
             selectedAnswer = answer;
-            console.log('Selected answer:', answer);
+            // Highlight the selected answer
             document.querySelectorAll('.list-group-item').forEach(button => {
                 button.classList.remove('active');
             });
@@ -377,7 +347,7 @@
                 
                 if (player === username) {
                     li.className += ' list-group-item-primary';
-                    li.innerHTML += ' <span class="badge">You</span>';
+                    li.innerHTML += ' <span class="badge bg-primary">You</span>';
                 }
                 
                 playerList.appendChild(li);
@@ -385,49 +355,51 @@
         }
         
         function startGame(data) {
-            console.log('Starting game with data:', data);
+            // Hide waiting lobby
             waitingLobby.style.display = 'none';
+            
+            // Show scoreboard and leave game button
             scoreboard.style.display = 'block';
             leaveGameContainer.style.display = 'block';
             updateScoreboard(data.scores);
             
+            // Check if it's your turn to select a topic
             if (data.current_player === username) {
                 topicSelection.style.display = 'block';
-                topicInput.value = '';
-                console.log('Your turn to select topic');
             } else {
-                startTriviaFacts();
                 const waitingDiv = document.createElement('div');
                 waitingDiv.id = 'waiting-for-topic';
                 waitingDiv.className = 'text-center my-5';
                 waitingDiv.innerHTML = `
                     <h3>Waiting for ${data.current_player} to select a topic...</h3>
-                    <div class="spinner-border" role="status">
+                    <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 `;
                 document.querySelector('.card-body').appendChild(waitingDiv);
-                console.log(`Waiting for ${data.current_player} to select topic`);
             }
         }
         
         function showQuestion(data) {
+            // Clear any loading or waiting elements
             const loadingEl = document.getElementById('loading-question');
             if (loadingEl) loadingEl.remove();
             
             const waitingEl = document.getElementById('waiting-for-topic');
             if (waitingEl) waitingEl.remove();
-            triviaFacts.style.display = 'none';
             
+            // Show question
             questionDisplay.style.display = 'block';
             document.getElementById('topic-display').textContent = data.topic;
             document.getElementById('question-text').textContent = data.question;
             
+            // Populate answer options
             document.getElementById('option-a-text').textContent = data.options[0];
             document.getElementById('option-b-text').textContent = data.options[1];
             document.getElementById('option-c-text').textContent = data.options[2];
             document.getElementById('option-d-text').textContent = data.options[3];
             
+            // Reset answer selection
             selectedAnswer = null;
             document.querySelectorAll('.list-group-item').forEach(button => {
                 button.classList.remove('active');
@@ -436,10 +408,12 @@
             document.getElementById('submit-answer-btn').disabled = false;
             document.querySelector('.waiting-for-answers').style.display = 'none';
             
+            // Reset answered players
             answeredPlayers.clear();
             document.getElementById('answered-players').innerHTML = '';
             document.getElementById('answer-progress').style.width = '0%';
             
+            // Start timer
             startTimer();
         }
         
@@ -454,9 +428,11 @@
                 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    // Automatically submit the selected answer if time runs out
                     if (selectedAnswer) {
                         document.getElementById('submit-answer-btn').click();
                     } else {
+                        // If no answer is selected, submit an empty answer
                         socket.emit('submit_answer', {
                             game_id: gameId,
                             username: username,
@@ -470,6 +446,7 @@
         function playerAnswered(playerName) {
             answeredPlayers.add(playerName);
             
+            // Update the list of players who answered
             const answeredPlayersList = document.getElementById('answered-players');
             answeredPlayersList.innerHTML = '';
             
@@ -480,18 +457,24 @@
                 answeredPlayersList.appendChild(li);
             });
             
+            // Update progress bar
             const playersCount = document.getElementById('player-list').childElementCount;
             const progress = (answeredPlayers.size / playersCount) * 100;
             document.getElementById('answer-progress').style.width = progress + '%';
         }
         
         function showResults(data) {
+            // Hide question display
             questionDisplay.style.display = 'none';
+            
+            // Show results
             resultsDisplay.style.display = 'block';
             
+            // Populate correct answer
             document.getElementById('correct-answer').textContent = data.correct_answer;
             document.getElementById('answer-explanation').textContent = data.explanation;
             
+            // Populate player answers
             const playerAnswersList = document.getElementById('player-answers');
             playerAnswersList.innerHTML = '';
             
@@ -511,8 +494,13 @@
                 playerAnswersList.appendChild(li);
             });
             
+            // Update next player info
             document.getElementById('next-player').textContent = data.next_player;
+            
+            // Update scoreboard
             updateScoreboard(data.scores);
+            
+            // Set up for next round
             startNextRoundCountdown(data.next_player);
         }
         
@@ -520,6 +508,7 @@
             const scoresTableBody = document.getElementById('scores-table-body');
             scoresTableBody.innerHTML = '';
             
+            // Sort players by score (descending)
             const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
             
             sortedScores.forEach(([player, score], index) => {
@@ -530,7 +519,7 @@
                 }
                 
                 tr.innerHTML = `
-                    <td><span class="player-emoji">${emojiMap[player]}</span> ${player}</td>
+                    <td>${player}</td>
                     <td>${score}</td>
                 `;
                 
@@ -542,76 +531,72 @@
             let progress = 0;
             const progressBar = document.getElementById('next-round-progress');
             
+            // Ensure the progress bar starts empty
             progressBar.style.width = '0%';
+            
+            // Set a smooth transition effect
             progressBar.style.transition = 'width 10s linear';
             
+            // Start loading
             setTimeout(() => {
                 progressBar.style.width = '100%';
             }, 100);
             
+            // Reset UI when loading completes
             setTimeout(() => {
                 progressBar.style.width = '0%';
-                progressBar.style.transition = 'none';
+                progressBar.style.transition = 'none'; // Remove transition for reset
+            
                 resultsDisplay.style.display = 'none';
             
+                // Check if it's your turn
                 if (nextPlayer === username) {
                     topicSelection.style.display = 'block';
-                    topicInput.value = '';
-                    console.log('Your turn to select topic in next round');
                 } else {
-                    startTriviaFacts();
                     const waitingDiv = document.createElement('div');
                     waitingDiv.id = 'waiting-for-topic';
                     waitingDiv.className = 'text-center my-5';
                     waitingDiv.innerHTML = `
                         <h3>Waiting for ${nextPlayer} to select a topic...</h3>
-                        <div class="spinner-border" role="status">
+                        <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     `;
                     document.querySelector('.card-body').appendChild(waitingDiv);
-                    console.log(`Waiting for ${nextPlayer} to select topic in next round`);
                 }
-            }, 10000);
+            }, 10000); // 15 seconds total countdown (50ms * 100 steps)
         }
+    </script>
+    <script>
+    document.addEventListener("click", function() {
+        document.getElementById("background-music").muted = false;
+    }, { once: true });  // Runs only once on first user interaction
+</script>
+<script>
+    // Ensure the audio element is defined
+    const audioElement = new Audio('your-audio-file-path.mp3'); // Replace with your audio file path
 
-        const triviaFactsList = [
-            "The shortest war in history lasted 38 minutes.",
-            "Honey never spoils; archaeologists found edible honey in ancient Egyptian tombs.",
-            "Octopuses have three hearts.",
-            "The Eiffel Tower can be 15 cm taller in summer due to thermal expansion.",
-            "Bananas are berries, but strawberries aren't!"
-        ];
+    // Select the buttons after DOM is fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+        const playButton = document.getElementById("playButton");
+        const pauseButton = document.getElementById("pauseButton");
 
-        function startTriviaFacts() {
-            triviaFacts.style.display = 'block';
-            let index = 0;
-            setInterval(() => {
-                triviaFacts.innerHTML = `<span>${triviaFactsList[index]}</span>`;
-                index = (index + 1) % triviaFactsList.length;
-            }, 3000);
-        }
-
-        const audioElement = document.getElementById("background-music");
-        const musicSelect = document.getElementById("music-select");
-        const volumeControl = document.getElementById("volume-control");
-        const muteToggle = document.getElementById("mute-toggle");
-
-        musicSelect.addEventListener("change", function() {
-            const newSrc = "{{ url_for('static', filename='') }}" + this.value;
-            audioElement.src = newSrc;
+        // Play button functionality
+        playButton.addEventListener("click", function() {
+            audioElement.muted = false; // Unmute if muted
             audioElement.play();
         });
 
-        volumeControl.addEventListener("input", function() {
-            audioElement.volume = this.value;
+        // Pause button functionality
+        pauseButton.addEventListener("click", function() {
+            audioElement.pause();
         });
 
-        muteToggle.addEventListener("click", function() {
-            audioElement.muted = !audioElement.muted;
-            this.classList.toggle("muted", audioElement.muted);
-            this.textContent = audioElement.muted ? "🔇" : "🔊";
+        // Ensure autoplay works if the browser blocks it
+        audioElement.play().catch(() => {
+            console.log("Autoplay blocked. User interaction required.");
         });
-    </script>
+    });
+</script>
 </body>
 </html>
