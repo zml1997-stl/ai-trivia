@@ -196,17 +196,17 @@
 
         // Connect to Socket.IO
         document.addEventListener('DOMContentLoaded', function() {
-            alert('Page loaded for game ' + gameId + ' as ' + username);
             connectToSocket();
             setupEventListeners();
             document.querySelector('.card-body').prepend(triviaFacts);
+            console.log('DOM loaded, initializing game with gameId:', gameId, 'username:', username);
         });
         
         function connectToSocket() {
             socket = io();
             
             socket.on('connect', function() {
-                alert('Connected to server');
+                console.log('Connected to server');
                 socket.emit('join_game_room', {
                     game_id: gameId,
                     username: username
@@ -214,7 +214,7 @@
             });
             
             socket.on('player_joined', function(data) {
-                alert('Player joined: ' + data.username);
+                console.log('Player joined:', data);
                 if (!emojiMap[data.username]) {
                     emojiMap[data.username] = emojis[Math.floor(Math.random() * emojis.length)];
                 }
@@ -222,37 +222,38 @@
             });
             
             socket.on('player_left', function(data) {
-                alert('Player left: ' + data.username);
+                console.log('Player left:', data);
                 updatePlayerList(data.players);
             });
             
             socket.on('game_started', function(data) {
-                alert('Game started, current player: ' + data.current_player);
+                console.log('Game started with data:', data);
                 startGame(data);
             });
             
             socket.on('question_ready', function(data) {
-                alert('Question ready for topic: ' + data.topic);
+                console.log('Question ready:', data);
                 showQuestion(data);
             });
             
             socket.on('player_answered', function(data) {
-                alert('Player answered: ' + data.username);
+                console.log('Player answered:', data);
                 playerAnswered(data.username);
             });
             
             socket.on('round_results', function(data) {
-                alert('Round results, correct answer: ' + data.correct_answer);
+                console.log('Round results:', data);
                 showResults(data);
             });
 
             socket.on('random_topic_selected', function(data) {
-                alert('Random topic selected: ' + data.topic);
+                console.log('Random topic selected:', data);
                 document.getElementById('topic-input').value = data.topic;
             });
 
             socket.on('error', function(data) {
-                alert('Error: ' + data.message);
+                console.log('Error:', data);
+                alert(data.message);
             });
         }
         
@@ -260,19 +261,18 @@
             const startGameBtn = document.getElementById('start-game-btn');
             if (startGameBtn) {
                 startGameBtn.addEventListener('click', function() {
-                    alert('Start game clicked by ' + username);
+                    console.log('Start game button clicked', { game_id: gameId, username: username });
                     socket.emit('start_game', {
                         game_id: gameId,
                         username: username
                     });
-                    startGameBtn.disabled = true; // Prevent multiple clicks
                 });
             }
             
             document.getElementById('submit-topic-btn').addEventListener('click', function() {
                 const topic = document.getElementById('topic-input').value.trim();
                 if (topic) {
-                    alert('Submitting topic: ' + topic);
+                    console.log('Submitting topic:', topic);
                     socket.emit('select_topic', {
                         game_id: gameId,
                         username: username,
@@ -294,7 +294,7 @@
             });
 
             document.getElementById('random-topic-btn').addEventListener('click', function() {
-                alert('Requesting random topic');
+                console.log('Requesting random topic');
                 socket.emit('select_topic', {
                     game_id: gameId,
                     username: username,
@@ -329,7 +329,7 @@
 
             document.getElementById('submit-answer-btn').addEventListener('click', function() {
                 if (selectedAnswer) {
-                    alert('Submitting answer: ' + selectedAnswer);
+                    console.log('Submitting answer:', selectedAnswer);
                     socket.emit('submit_answer', {
                         game_id: gameId,
                         username: username,
@@ -343,7 +343,6 @@
             });
 
             document.getElementById('leave-game-btn').addEventListener('click', function() {
-                alert('Leaving game');
                 window.location.href = '/';
             });
 
@@ -354,7 +353,7 @@
         
         function selectAnswer(answer) {
             selectedAnswer = answer;
-            alert('Selected answer: ' + answer);
+            console.log('Selected answer:', answer);
             document.querySelectorAll('.list-group-item').forEach(button => {
                 button.classList.remove('active');
             });
@@ -386,6 +385,7 @@
         }
         
         function startGame(data) {
+            console.log('Starting game with data:', data);
             waitingLobby.style.display = 'none';
             scoreboard.style.display = 'block';
             leaveGameContainer.style.display = 'block';
@@ -394,6 +394,7 @@
             if (data.current_player === username) {
                 topicSelection.style.display = 'block';
                 topicInput.value = '';
+                console.log('Your turn to select topic');
             } else {
                 startTriviaFacts();
                 const waitingDiv = document.createElement('div');
@@ -406,6 +407,7 @@
                     </div>
                 `;
                 document.querySelector('.card-body').appendChild(waitingDiv);
+                console.log(`Waiting for ${data.current_player} to select topic`);
             }
         }
         
@@ -531,6 +533,7 @@
                     <td><span class="player-emoji">${emojiMap[player]}</span> ${player}</td>
                     <td>${score}</td>
                 `;
+                
                 scoresTableBody.appendChild(tr);
             });
         }
@@ -554,6 +557,7 @@
                 if (nextPlayer === username) {
                     topicSelection.style.display = 'block';
                     topicInput.value = '';
+                    console.log('Your turn to select topic in next round');
                 } else {
                     startTriviaFacts();
                     const waitingDiv = document.createElement('div');
@@ -566,6 +570,7 @@
                         </div>
                     `;
                     document.querySelector('.card-body').appendChild(waitingDiv);
+                    console.log(`Waiting for ${nextPlayer} to select topic in next round`);
                 }
             }, 10000);
         }
