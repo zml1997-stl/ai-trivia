@@ -1,5 +1,3 @@
-[file name]: app.py
-[file content begin]
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import os
 import uuid
@@ -57,9 +55,6 @@ class Question(db.Model):
     options = db.Column(db.JSON, nullable=False)
     explanation = db.Column(db.String(500))
 
-# Game state storage (temporary, will be replaced by database)
-games = {}
-
 # Helper functions for fuzzy matching
 def normalize_text(text):
     # Lowercase, trim whitespace, and remove punctuation.
@@ -93,19 +88,15 @@ def create_game():
     if not username:
         return redirect(url_for('index'))
     
-    game_id = generate_game_id()
-    games[game_id] = {
-        'host': username,
-        'players': [username],
-        'disconnected': set(),
-        'status': 'waiting',
-        'current_player_index': 0,
-        'current_question': None,
-        'answers': {},
-        'scores': {username: 0},
-        'question_start_time': None
-    }
-    
+    game_id = ''.join(random.choices(string.ascii_uppercase, k=4))
+    new_game = Game(id=game_id, host=username)
+    db.session.add(new_game)
+    db.session.commit()
+
+    new_player = Player(username=username, game_id=game_id)
+    db.session.add(new_player)
+    db.session.commit()
+
     session['game_id'] = game_id
     session['username'] = username
     
@@ -119,18 +110,20 @@ def join_game():
     if not username or not game_id:
         return redirect(url_for('index'))
     
-    if game_id not in games:
+    game = Game.query.get(game_id)
+    if not game:
         return "Game not found", 404
     
-    if games[game_id]['status'] != 'waiting':
+    if game.status != 'waiting':
         return "Game already in progress", 403
     
-    if len(games[game_id]['players']) >= 10:
+    if len(Player.query.filter_by(game_id=game_id).all()) >= 10:
         return "Game is full", 403
     
-    if username not in games[game_id]['players']:
-        games[game_id]['players'].append(username)
-        games[game_id]['scores'][username] = 0
+    if not Player.query.filter_by(username=username, game_id=game_id).first():
+        new_player = Player(username=username, game_id=game_id)
+        db.session.add(new_player)
+        db.session.commit()
     
     session['game_id'] = game_id
     session['username'] = username
@@ -139,14 +132,15 @@ def join_game():
 
 @app.route('/game/<game_id>')
 def game(game_id):
-    if game_id not in games:
+    game = Game.query.get(game_id)
+    if not game:
         return redirect(url_for('index'))
     
     username = session.get('username')
-    if not username or username not in games[game_id]['players']:
+    if not username or not Player.query.filter_by(username=username, game_id=game_id).first():
         return redirect(url_for('index'))
     
-    return render_template('game.html', game_id=game_id, username=username, is_host=(username == games[game_id]['host']))
+    return render_template('game.html', game_id=game_id, username=username, is_host=(username == game.host))
 
 def get_trivia_question(topic):
     try:
@@ -204,25 +198,29 @@ def handle_join_game_room(data):
     game_id = data.get('game_id')
     username = data.get('username')
     
-    if game_id in games and username in games[game_id]['players']:
-        # Remove from disconnected set if the user is rejoining.
-        games[game_id].setdefault('disconnected', set()).discard(username)
+    game = Game.query.get(game_id)
+    if game and Player.query.filter_by(username=username, game_id=game_id).first():
         join_room(game_id)
-        emit('player_joined', {'username': username, 'players': games[game_id]['players']}, to=game_id)
+        players = [player.username for player in Player.query.filter_by(game_id=game_id).all()]
+        emit('player_joined', {'username': username, 'players': players}, to=game_id)
 
 @socketio.on('start_game')
 def handle_start_game(data):
     game_id = data.get('game_id')
     username = data.get('username')
     
-    if game_id in games and username == games[game_id]['host'] and games[game_id]['status'] == 'waiting':
-        games[game_id]['status'] = 'in_progress'
-        current_player = games[game_id]['players'][games[game_id]['current_player_index']]
+    game = Game.query.get(game_id)
+    if game and username == game.host and game.status == 'waiting':
+        game.status = 'in_progress'
+        db.session.commit()
+
+        players = [player.username for player in Player.query.filter_by(game_id=game_id).all()]
+        current_player = players[game.current_player_index]
         
         emit('game_started', {
             'current_player': current_player,
-            'players': games[game_id]['players'],
-            'scores': games[game_id]['scores']
+            'players': players,
+            'scores': {player.username: player.score for player in Player.query.filter_by(game_id=game_id).all()}
         }, to=game_id)
 
 # Helper function to normalize the answer
@@ -236,14 +234,11 @@ def handle_select_topic(data):
     username = data.get('username')
     topic = data.get('topic')
 
-    if (game_id in games and 
-        username in games[game_id]['players'] and 
-        games[game_id]['status'] == 'in_progress' and
-        games[game_id]['players'][games[game_id]['current_player_index']] == username):
-
-        # Ensure the game has a set to track asked questions and answers
-        if 'questions_asked' not in games[game_id]:
-            games[game_id]['questions_asked'] = []
+    game = Game.query.get(game_id)
+    if (game and 
+        Player.query.filter_by(username=username, game_id=game_id).first() and 
+        game.status == 'in_progress' and
+        game.players[game.current_player_index] == username):
 
         max_attempts = 5  # Limit retries to avoid infinite loops
 
@@ -261,19 +256,26 @@ def handle_select_topic(data):
 
             # Check for duplicates using normalized answer and question content
             duplicate_found = False
-            for prev_question, prev_answer in games[game_id]['questions_asked']:
-                normalized_prev_answer = normalize_answer(prev_answer)
+            for prev_question in Question.query.filter_by(game_id=game_id).all():
+                normalized_prev_answer = normalize_answer(prev_question.answer)
 
                 # If both the question and answer are similar, skip this question
-                if normalized_answer == normalized_prev_answer or question_text == prev_question:
+                if normalized_answer == normalized_prev_answer or question_text == prev_question.question_text:
                     duplicate_found = True
                     break
 
             if not duplicate_found:
-                games[game_id]['questions_asked'].append((question_text, answer_text))
-                games[game_id]['current_question'] = question_data
-                games[game_id]['answers'] = {}
-                games[game_id]['question_start_time'] = datetime.now()
+                new_question = Question(
+                    game_id=game_id,
+                    question_text=question_text,
+                    answer=answer_text,
+                    options=question_data['options'],
+                    explanation=question_data['explanation']
+                )
+                db.session.add(new_question)
+                game.current_question = question_data
+                game.question_start_time = datetime.now()
+                db.session.commit()
 
                 emit('question_ready', {
                     'question': question_data['question'],
@@ -291,58 +293,64 @@ def handle_submit_answer(data):
     username = data.get('username')
     answer = data.get('answer')
     
-    if (game_id in games and 
-        username in games[game_id]['players'] and 
-        games[game_id]['status'] == 'in_progress' and
-        games[game_id]['current_question']):
+    game = Game.query.get(game_id)
+    if (game and 
+        Player.query.filter_by(username=username, game_id=game_id).first() and 
+        game.status == 'in_progress' and
+        game.current_question):
         
         # Check if time is up
-        time_elapsed = datetime.now() - games[game_id]['question_start_time']
+        time_elapsed = datetime.now() - game.question_start_time
         if time_elapsed.total_seconds() > 30:
             answer = None  # Mark as no answer submitted
         
         # Map the selected letter (A, B, C, D) to the corresponding option text
         if answer in ['A', 'B', 'C', 'D']:
             option_index = ord(answer) - ord('A')  # Convert A=0, B=1, C=2, D=3
-            answer = games[game_id]['current_question']['options'][option_index]
+            answer = game.current_question['options'][option_index]
         
-        games[game_id]['answers'][username] = answer
+        # Update player's answer
+        player = Player.query.filter_by(username=username, game_id=game_id).first()
+        player.answer = answer
+        db.session.commit()
+
         emit('player_answered', {'username': username}, to=game_id)
         
-        # Check if all players (even disconnected ones) have answered.
-        if len(games[game_id]['answers']) == len(games[game_id]['players']):
-            correct_answer = games[game_id]['current_question']['answer']
+        # Check if all players have answered
+        players = Player.query.filter_by(game_id=game_id).all()
+        if all(player.answer is not None for player in players):
+            correct_answer = game.current_question['answer']
             correct_players = []
             
-            for player, player_answer in games[game_id]['answers'].items():
-                # Use fuzzy matching to determine if the answer is close enough.
-                if player_answer and is_close_enough(player_answer, correct_answer):
-                    correct_players.append(player)
-                    games[game_id]['scores'][player] += 1
+            for player in players:
+                if player.answer and is_close_enough(player.answer, correct_answer):
+                    correct_players.append(player.username)
+                    player.score += 1
+                    db.session.commit()
             
-            # Update to the next player's turn.
-            games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
-            next_player = games[game_id]['players'][games[game_id]['current_player_index']]
+            # Update to the next player's turn
+            game.current_player_index = (game.current_player_index + 1) % len(players)
+            next_player = players[game.current_player_index].username
+            db.session.commit()
             
             emit('round_results', {
                 'correct_answer': correct_answer,
-                'explanation': games[game_id]['current_question']['explanation'],
-                'player_answers': games[game_id]['answers'],
+                'explanation': game.current_question['explanation'],
+                'player_answers': {player.username: player.answer for player in players},
                 'correct_players': correct_players,
                 'next_player': next_player,
-                'scores': games[game_id]['scores']
+                'scores': {player.username: player.score for player in players}
             }, to=game_id)
 
 @socketio.on('disconnect')
 def handle_disconnect():
     username = session.get('username')
-    # Instead of removing the user, mark them as disconnected.
-    for game_id, game in games.items():
-        if username in game['players']:
-            game.setdefault('disconnected', set()).add(username)
+    game_id = session.get('game_id')
+    if username and game_id:
+        player = Player.query.filter_by(username=username, game_id=game_id).first()
+        if player:
             emit('player_disconnected', {'username': username}, to=game_id)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=True)
-[file content end]
