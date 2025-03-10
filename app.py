@@ -122,14 +122,18 @@ def is_close_enough(user_answer, correct_answer, threshold=0.8):
     return ratio >= threshold
 
 @app.route('/')
-def index():
+def welcome():
+    return render_template('welcome.html')
+
+@app.route('/play')
+def play():
     return render_template('index.html')
 
 @app.route('/create_game', methods=['POST'])
 def create_game():
     username = request.form.get('username')
     if not username:
-        return redirect(url_for('index'))
+        return redirect(url_for('play'))
     
     game_id = generate_game_id()
     games[game_id] = {
@@ -155,7 +159,7 @@ def join_game():
     game_id = request.form.get('game_id')
     
     if not username or not game_id:
-        return redirect(url_for('index'))
+        return redirect(url_for('play'))
     
     if game_id not in games:
         return "Game not found", 404
@@ -178,11 +182,11 @@ def join_game():
 @app.route('/game/<game_id>')
 def game(game_id):
     if game_id not in games:
-        return redirect(url_for('index'))
+        return redirect(url_for('welcome'))
     
     username = session.get('username')
     if not username or username not in games[game_id]['players']:
-        return redirect(url_for('index'))
+        return redirect(url_for('welcome'))
     
     return render_template('game.html', game_id=game_id, username=username, is_host=(username == games[game_id]['host']))
 
