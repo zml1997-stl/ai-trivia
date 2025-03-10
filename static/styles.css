@@ -1,84 +1,75 @@
-/* Global Styles */
+/* Mobile-first global styles */
 body {
-    background: linear-gradient(135deg, #1e3c72, #2a5298); /* Cosmic gradient */
-    color: #ffffff;
+    background-color: #f8f9fa; /* Light background for readability */
+    color: #333;
     min-height: 100vh;
-    display: flex;
-    align-items: center;
     padding: 0;
     margin: 0;
     font-family: 'Arial', sans-serif;
-    position: relative;
-    overflow-x: hidden;
+    line-height: 1.6;
 }
 
-/* Glassmorphism Card */
+/* Card base styling */
 .card, .welcome-card, .play-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 2rem;
-    text-align: center;
-    max-width: 600px;
-    margin: 0 auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem auto;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    width: 100%;
 }
 
 .card-header {
     border-bottom: none;
     font-size: 1.25rem;
-    background: transparent;
-    color: #00d4ff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #00d4ff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    margin-bottom: 1.5rem;
-}
-
-h2, h3 {
-    font-size: 1.5rem;
-    color: #e0e0e0;
+    color: #007bff;
+    font-weight: 600;
     margin-bottom: 1rem;
 }
 
+h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #007bff;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+h2, h3 {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
 p, .form-label {
-    color: #e0e0e0;
-    font-size: 1.1rem;
-    line-height: 1.6;
+    font-size: 1rem;
+    color: #555;
 }
 
 .form-label {
     font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
 }
 
 /* Buttons */
 .btn-primary, .btn-success, .animated-btn {
-    background-color: #ff6f61;
+    background-color: #007bff;
     border: none;
-    padding: 0.75rem 2rem;
-    font-size: 1.25rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #fff;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 111, 97, 0.4);
+    border-radius: 5px;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s ease;
 }
 
 .btn-primary:hover, .btn-success:hover, .animated-btn:hover {
-    background-color: #e65b4d;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 111, 97, 0.6);
-}
-
-.btn-primary:active, .btn-success:active, .animated-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(255, 111, 97, 0.4);
+    background-color: #0056b3;
 }
 
 .btn-success {
@@ -96,14 +87,14 @@ p, .form-label {
 
 .btn-secondary:hover {
     background-color: #5a6268;
-    border-color: #545b62;
 }
 
 /* Progress Bars */
 .progress {
-    height: 20px;
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.2);
+    height: 10px;
+    border-radius: 5px;
+    background-color: #e9ecef;
+    margin-bottom: 1rem;
 }
 
 .progress-bar {
@@ -114,119 +105,111 @@ p, .form-label {
 .list-group-item {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #e0e0e0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    text-align: left;
 }
 
 .list-group-item.active {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: white;
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
 }
 
 .list-group-item:hover:not(.active) {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: #e9ecef;
 }
 
 .list-group-item.disabled {
     cursor: not-allowed;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: #e9ecef;
     color: #6c757d;
     opacity: 0.65;
 }
 
 /* Scoreboard */
 #scoreboard table {
+    width: 100%;
     text-align: center;
-    color: #e0e0e0;
+    margin-top: 1rem;
 }
 
 #scoreboard th,
 #scoreboard td {
     padding: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid #ddd;
 }
 
 .table-primary {
-    background-color: rgba(13, 110, 253, 0.2);
-}
-
-/* Cosmic Stars */
-.stars {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: -1;
-}
-
-.star {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    background: #fff;
-    border-radius: 50%;
-    animation: twinkle 2s infinite alternate;
-}
-
-@keyframes twinkle {
-    from { opacity: 0.5; }
-    to { opacity: 1; }
+    background-color: rgba(0, 123, 255, 0.1);
 }
 
 /* Responsive Adjustments */
-@media (max-width: 576px) {
-    h1 {
-        font-size: 2rem;
-    }
-    h2, h3 {
-        font-size: 1.2rem;
+@media (min-width: 576px) {
+    .card, .welcome-card, .play-card {
+        max-width: 500px;
     }
     .btn-primary, .btn-success, .animated-btn {
-        font-size: 1.1rem;
-        padding: 0.6rem 1.5rem;
+        width: auto;
+        margin-right: 0.5rem;
+    }
+    .d-grid.gap-2.d-md-flex.justify-content-md-center {
+        display: flex !important;
+        gap: 1rem;
+    }
+    h1 {
+        font-size: 2.5rem;
+    }
+    h2, h3 {
+        font-size: 1.5rem;
     }
     .list-group-item {
-        font-size: 0.9rem;
-        padding: 0.5rem 0.75rem;
-    }
-    .card, .welcome-card, .play-card {
-        padding: 1.5rem;
+        font-size: 1.1rem;
+        padding: 1.25rem;
     }
 }
 
 /* Specific Adjustments */
 #correct-answer {
     font-weight: bold;
-    color: #198754;
+    color: #28a745;
     font-size: 1.25rem;
+    text-align: center;
 }
 
 #answer-explanation {
     color: #6c757d;
     font-style: italic;
+    text-align: center;
 }
 
 .waiting-for-answers {
     text-align: center;
     padding: 1rem;
-    border-radius: 10px;
-    background-color: rgba(233, 236, 239, 0.1);
+    border-radius: 5px;
+    background-color: #e9ecef;
+    margin-bottom: 1rem;
 }
 
 #next-round-info {
-    margin-top: 2rem;
+    margin-top: 1rem;
     padding: 1rem;
-    border-radius: 10px;
-    background-color: rgba(233, 236, 239, 0.1);
+    border-radius: 5px;
+    background-color: #e9ecef;
     text-align: center;
 }
 
 .spinner-border {
-    width: 3rem;
-    height: 3rem;
+    width: 2rem;
+    height: 2rem;
     margin: 1rem auto;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
 }
