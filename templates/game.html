@@ -132,7 +132,6 @@
                                 <thead>
                                     <tr>
                                         <th>Player</th>
-                                        <th>Emoji</th>
                                         <th>Score</th>
                                     </tr>
                                 </thead>
@@ -152,18 +151,8 @@
         <button id="leave-game-btn" class="btn btn-danger btn-lg">Leave Game</button>
     </div>
 
-    <!-- Music Control Button -->
-    <button id="music-control-btn" class="music-control-btn">🎵</button>
-
-    <!-- Music Player Popup -->
-    <div id="music-player" class="music-player">
-        <div class="d-flex justify-content-between">
-            <button id="play-btn" class="btn btn-primary">▶️</button>
-            <button id="pause-btn" class="btn btn-primary">⏸️</button>
-            <button id="skip-btn" class="btn btn-primary">⏭️</button>
-            <button id="mute-btn" class="btn btn-primary">🔇</button>
-        </div>
-    </div>
+    <!-- Mute Button -->
+    <button id="mute-btn" class="music-control-btn">🔇</button>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='music.js') }}"></script>
@@ -176,6 +165,7 @@
         let timerInterval;
         let timeLeft = 30;
         let selectedAnswer = null;
+        let player_emojis = {};
 
         const waitingLobby = document.getElementById('waiting-lobby');
         const topicSelection = document.getElementById('topic-selection');
@@ -184,14 +174,11 @@
         const scoreboard = document.getElementById('scoreboard');
         const leaveGameContainer = document.getElementById('leave-game-container');
         const timerProgress = document.getElementById('timer-progress');
-        const selectSound = document.getElementById('select-sound');
-        const submitSound = document.getElementById('submit-sound');
-        const correctSound = document.getElementById('correct-sound');
-        const roundEndSound = document.getElementById('round-end-sound');
 
         document.addEventListener('DOMContentLoaded', function() {
             connectToSocket();
             setupEventListeners();
+            window.switchToHomeMusic(); // Start with home music in lobby
         });
 
         function connectToSocket() {
@@ -242,24 +229,24 @@
             });
             document.getElementById('option-a').addEventListener('click', function() { 
                 selectAnswer('A'); 
-                selectSound.play();
+                window.playSelectSound();
             });
             document.getElementById('option-b').addEventListener('click', function() { 
                 selectAnswer('B'); 
-                selectSound.play();
+                window.playSelectSound();
             });
             document.getElementById('option-c').addEventListener('click', function() { 
                 selectAnswer('C'); 
-                selectSound.play();
+                window.playSelectSound();
             });
             document.getElementById('option-d').addEventListener('click', function() { 
                 selectAnswer('D'); 
-                selectSound.play();
+                window.playSelectSound();
             });
             document.getElementById('submit-answer-btn').addEventListener('click', function() {
                 if (selectedAnswer) {
                     socket.emit('submit_answer', { game_id: gameId, username: username, answer: selectedAnswer });
-                    submitSound.play();
+                    window.playSubmitSound();
                     disableAnswerButtons();
                     document.getElementById('submit-answer-btn').disabled = true;
                     document.querySelector('.waiting-for-answers').style.display = 'block';
@@ -267,6 +254,9 @@
             });
             document.getElementById('leave-game-btn').addEventListener('click', function() {
                 window.location.href = '/';
+            });
+            document.getElementById('mute-btn').addEventListener('click', function() {
+                window.muteToggle(); // Assuming music.js exposes this, but handled directly there
             });
         }
 
@@ -280,7 +270,8 @@
             document.querySelectorAll('.list-group-item').forEach(button => button.disabled = true);
         }
 
-        function updatePlayerList(players, player_emojis) {
+        function updatePlayerList(players, emojis) {
+            player_emojis = emojis;
             const playerList = document.getElementById('player-list');
             playerList.innerHTML = '';
             players.forEach(player => {
@@ -300,8 +291,10 @@
             scoreboard.style.display = 'block';
             leaveGameContainer.style.display = 'block';
             updateScoreboard(data.scores, data.player_emojis);
+            window.switchToGameMusic(); // Switch to game music
             if (data.current_player === username) {
                 topicSelection.style.display = 'block';
+                document.getElementById('topic-input').value = ''; // Clear input field
             } else {
                 const waitingDiv = document.createElement('div');
                 waitingDiv.id = 'waiting-for-topic';
@@ -372,7 +365,7 @@
         function showResults(data) {
             questionDisplay.style.display = 'none';
             resultsDisplay.style.display = 'block';
-            roundEndSound.play();
+            window.playRoundEndSound();
             document.getElementById('correct-answer').textContent = data.correct_answer;
             document.getElementById('answer-explanation').textContent = data.explanation;
             const playerAnswersList = document.getElementById('player-answers');
@@ -382,7 +375,7 @@
                 li.className = 'list-group-item';
                 if (data.correct_players.includes(player)) {
                     li.classList.add('correct-answer');
-                    if (player === username) correctSound.play();
+                    if (player === username) window.playCorrectSound();
                 } else if (answer) {
                     li.classList.add('incorrect-answer');
                 }
@@ -424,6 +417,7 @@
                 resultsDisplay.style.display = 'none';
                 if (nextPlayer === username) {
                     topicSelection.style.display = 'block';
+                    document.getElementById('topic-input').value = ''; // Clear input field
                 } else {
                     const waitingDiv = document.createElement('div');
                     waitingDiv.id = 'waiting-for-topic';
