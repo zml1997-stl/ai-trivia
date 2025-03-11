@@ -1,12 +1,12 @@
 /* Mobile-first global styles */
 body {
-    background-color: #f8f9fa; /* Light background for readability */
+    background-color: #e6f0fa; /* Soft teal-blue background */
     color: #333;
     min-height: 100vh;
     padding: 0;
     margin: 0;
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
+    font-family: 'Verdana', sans-serif; /* Slightly more modern font */
+    line-height: 1.4; /* Tighter line spacing */
 }
 
 /* Card base styling */
@@ -22,29 +22,29 @@ body {
 
 .card-header {
     border-bottom: none;
-    font-size: 1.25rem;
-    color: #007bff;
+    font-size: 1.2rem; /* Reduced from 1.25rem */
+    color: #006666; /* Dark teal for headers */
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem; /* Reduced from 1.75rem */
     font-weight: 700;
-    color: #007bff;
-    margin-bottom: 1rem;
+    color: #006666; /* Dark teal */
+    margin-bottom: 0.75rem;
     text-align: center;
 }
 
 h2, h3 {
-    font-size: 1.25rem;
+    font-size: 1.1rem; /* Reduced from 1.25rem */
     color: #333;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     text-align: center;
 }
 
 p, .form-label {
-    font-size: 1rem;
+    font-size: 0.95rem; /* Slightly reduced from 1rem */
     color: #555;
 }
 
@@ -56,10 +56,10 @@ p, .form-label {
 
 /* Buttons */
 .btn-primary, .btn-success, .animated-btn {
-    background-color: #007bff;
+    background-color: #ff7f50; /* Coral accent */
     border: none;
     padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Reduced from 1rem */
     font-weight: 600;
     color: #fff;
     border-radius: 5px;
@@ -69,11 +69,11 @@ p, .form-label {
 }
 
 .btn-primary:hover, .btn-success:hover, .animated-btn:hover {
-    background-color: #0056b3;
+    background-color: #e07d5e; /* Darker coral on hover */
 }
 
 .btn-success {
-    background-color: #28a745;
+    background-color: #28a745; /* Keep green for success */
 }
 
 .btn-success:hover {
@@ -110,14 +110,13 @@ p, .form-label {
     border: 1px solid #ddd;
     padding: 1rem;
     margin-bottom: 0.5rem;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Reduced from 1rem */
     text-align: left;
 }
 
 .list-group-item.active {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: #fff;
+    background-color: #add8e6; /* Light blue for selected answer */
+    border-color: #add8e6;
 }
 
 .list-group-item:hover:not(.active) {
@@ -145,7 +144,7 @@ p, .form-label {
 }
 
 .table-primary {
-    background-color: rgba(0, 123, 255, 0.1);
+    background-color: rgba(0, 102, 102, 0.1); /* Light teal for current player */
 }
 
 /* Responsive Adjustments */
@@ -162,13 +161,13 @@ p, .form-label {
         gap: 1rem;
     }
     h1 {
-        font-size: 2.5rem;
+        font-size: 2rem; /* Slightly reduced from 2.5rem */
     }
     h2, h3 {
-        font-size: 1.5rem;
+        font-size: 1.3rem; /* Reduced from 1.5rem */
     }
     .list-group-item {
-        font-size: 1.1rem;
+        font-size: 1rem; /* Reduced from 1.1rem */
         padding: 1.25rem;
     }
 }
@@ -177,7 +176,7 @@ p, .form-label {
 #correct-answer {
     font-weight: bold;
     color: #28a745;
-    font-size: 1.25rem;
+    font-size: 1.1rem; /* Reduced from 1.25rem */
     text-align: center;
 }
 
@@ -214,8 +213,6 @@ p, .form-label {
     padding: 0.25rem 0.5rem;
 }
 
-/* Add to the end of styles.css */
-
 /* Music Control Button */
 .music-control-btn {
     position: fixed;
@@ -223,7 +220,7 @@ p, .form-label {
     right: 15px;
     width: 40px;
     height: 40px;
-    background-color: #007bff;
+    background-color: #ff7f50; /* Coral */
     border: none;
     border-radius: 50%;
     color: #fff;
@@ -238,7 +235,7 @@ p, .form-label {
 }
 
 .music-control-btn:hover {
-    background-color: #0056b3;
+    background-color: #e07d5e; /* Darker coral on hover */
 }
 
 /* Music Player Popup */
@@ -264,11 +261,11 @@ p, .form-label {
     font-size: 1rem;
     width: 45px;
     margin: 0.25rem;
-    background-color: #007bff;
+    background-color: #ff7f50; /* Coral */
 }
 
 .music-player .btn:hover {
-    background-color: #0056b3;
+    background-color: #e07d5e; /* Darker coral */
 }
 
 .music-player .btn-muted {
@@ -295,4 +292,42 @@ p, .form-label {
         padding: 0.4rem;
         font-size: 0.9rem;
     }
+}
+
+/* Additional Styles for AI Trivia Game */
+
+/* Highlight selected answer */
+.list-group-item.active {
+    background-color: #add8e6; /* Light blue */
+    border-color: #add8e6;
+}
+
+/* Highlight correct and incorrect answers in results */
+.correct-answer {
+    background-color: #90ee90; /* Light green */
+}
+
+.incorrect-answer {
+    background-color: #ffcccb; /* Light red */
+}
+
+/* Player emoji styling */
+.player-emoji {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+/* Final scoreboard styling */
+#final-scoreboard {
+    text-align: center;
+}
+
+#final-scoreboard h2 {
+    color: #28a745; /* Green for "Game Over" */
+    font-size: 1.8rem; /* Adjusted for balance */
+    margin-bottom: 1rem;
+}
+
+#final-scoreboard .btn {
+    margin: 0.5rem;
 }
