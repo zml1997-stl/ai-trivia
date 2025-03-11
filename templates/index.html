@@ -58,13 +58,25 @@
         </div>
     </div>
 
-    <!-- Footer with Disclaimer -->
-    <footer class="footer mt-auto py-3 bg-light text-center">
+    <!-- Footer with Customized Disclaimer -->
+    <footer class="footer mt-auto py-4 bg-dark text-white custom-footer">
         <div class="container">
-            <span class="text-muted">© 2025 ZML. All rights reserved.</span>
-            <p class="text-muted small mt-1 disclaimer">
-                Disclaimer: TriviaTribeAI uses AI to generate random questions. These questions may not always be accurate or verified. Play for fun!
-            </p>
+            <div class="row">
+                <div class="col-12 col-md-6">
+                    <span class="text-white-50">© 2025 TriviaTribeAI by ZML. All rights reserved.</span>
+                </div>
+                <div class="col-12 col-md-6 text-end">
+                    <a href="{{ url_for('privacy') }}" class="text-white-50 me-3">Privacy Policy</a>
+                    <a href="{{ url_for('terms') }}" class="text-white-50">Terms of Service</a>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-12">
+                    <p class="text-white-50 small disclaimer custom-disclaimer">
+                        <strong>AI Disclaimer:</strong> TriviaTribeAI utilizes AI to generate random trivia questions. While we strive for accuracy, some questions or answers may be incorrect or unverified. This game is intended for entertainment purposes only. For factual accuracy, consult reliable sources.
+                    </p>
+                </div>
+            </div>
         </div>
     </footer>
 
