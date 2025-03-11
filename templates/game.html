@@ -7,6 +7,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <audio id="select-sound" src="{{ url_for('static', filename='select.mp3') }}" preload="auto"></audio>
+    <audio id="submit-sound" src="{{ url_for('static', filename='submit.mp3') }}" preload="auto"></audio>
+    <audio id="correct-sound" src="{{ url_for('static', filename='correct.mp3') }}" preload="auto"></audio>
+    <audio id="round-end-sound" src="{{ url_for('static', filename='round_end.mp3') }}" preload="auto"></audio>
 </head>
 <body>
     <div class="container">
@@ -128,6 +132,7 @@
                                 <thead>
                                     <tr>
                                         <th>Player</th>
+                                        <th>Emoji</th>
                                         <th>Score</th>
                                     </tr>
                                 </thead>
@@ -179,6 +184,10 @@
         const scoreboard = document.getElementById('scoreboard');
         const leaveGameContainer = document.getElementById('leave-game-container');
         const timerProgress = document.getElementById('timer-progress');
+        const selectSound = document.getElementById('select-sound');
+        const submitSound = document.getElementById('submit-sound');
+        const correctSound = document.getElementById('correct-sound');
+        const roundEndSound = document.getElementById('round-end-sound');
 
         document.addEventListener('DOMContentLoaded', function() {
             connectToSocket();
@@ -191,12 +200,13 @@
                 console.log('Connected to server');
                 socket.emit('join_game_room', { game_id: gameId, username: username });
             });
-            socket.on('player_joined', function(data) { updatePlayerList(data.players); });
-            socket.on('player_left', function(data) { updatePlayerList(data.players); });
+            socket.on('player_joined', function(data) { updatePlayerList(data.players, data.player_emojis); });
+            socket.on('player_left', function(data) { updatePlayerList(data.players, data.player_emojis); });
             socket.on('game_started', function(data) { startGame(data); });
             socket.on('question_ready', function(data) { showQuestion(data); });
             socket.on('player_answered', function(data) { playerAnswered(data.username); });
             socket.on('round_results', function(data) { showResults(data); });
+            socket.on('game_ended', function(data) { endGame(data); });
             socket.on('random_topic_selected', function(data) {
                 document.getElementById('topic-input').value = data.topic;
             });
@@ -230,13 +240,26 @@
                 loadingDiv.innerHTML = `<h3>Generating Question...</h3><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>`;
                 document.querySelector('.card-body').appendChild(loadingDiv);
             });
-            document.getElementById('option-a').addEventListener('click', function() { selectAnswer('A'); });
-            document.getElementById('option-b').addEventListener('click', function() { selectAnswer('B'); });
-            document.getElementById('option-c').addEventListener('click', function() { selectAnswer('C'); });
-            document.getElementById('option-d').addEventListener('click', function() { selectAnswer('D'); });
+            document.getElementById('option-a').addEventListener('click', function() { 
+                selectAnswer('A'); 
+                selectSound.play();
+            });
+            document.getElementById('option-b').addEventListener('click', function() { 
+                selectAnswer('B'); 
+                selectSound.play();
+            });
+            document.getElementById('option-c').addEventListener('click', function() { 
+                selectAnswer('C'); 
+                selectSound.play();
+            });
+            document.getElementById('option-d').addEventListener('click', function() { 
+                selectAnswer('D'); 
+                selectSound.play();
+            });
             document.getElementById('submit-answer-btn').addEventListener('click', function() {
                 if (selectedAnswer) {
                     socket.emit('submit_answer', { game_id: gameId, username: username, answer: selectedAnswer });
+                    submitSound.play();
                     disableAnswerButtons();
                     document.getElementById('submit-answer-btn').disabled = true;
                     document.querySelector('.waiting-for-answers').style.display = 'block';
@@ -257,13 +280,13 @@
             document.querySelectorAll('.list-group-item').forEach(button => button.disabled = true);
         }
 
-        function updatePlayerList(players) {
+        function updatePlayerList(players, player_emojis) {
             const playerList = document.getElementById('player-list');
             playerList.innerHTML = '';
             players.forEach(player => {
                 const li = document.createElement('li');
                 li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                li.textContent = player;
+                li.innerHTML = `<span class="player-emoji">${player_emojis[player]}</span>${player}`;
                 if (player === username) {
                     li.className += ' list-group-item-primary';
                     li.innerHTML += ' <span class="badge bg-primary">You</span>';
@@ -276,7 +299,7 @@
             waitingLobby.style.display = 'none';
             scoreboard.style.display = 'block';
             leaveGameContainer.style.display = 'block';
-            updateScoreboard(data.scores);
+            updateScoreboard(data.scores, data.player_emojis);
             if (data.current_player === username) {
                 topicSelection.style.display = 'block';
             } else {
@@ -302,7 +325,7 @@
             document.getElementById('option-d-text').textContent = data.options[3];
             selectedAnswer = null;
             document.querySelectorAll('.list-group-item').forEach(button => {
-                button.classList.remove('active');
+                button.classList.remove('active', 'correct-answer', 'incorrect-answer');
                 button.disabled = false;
             });
             document.getElementById('submit-answer-btn').disabled = false;
@@ -338,7 +361,7 @@
             Array.from(answeredPlayers).forEach(player => {
                 const li = document.createElement('li');
                 li.className = 'list-group-item';
-                li.textContent = player;
+                li.innerHTML = `<span class="player-emoji">${player_emojis[player]}</span>${player}`;
                 answeredPlayersList.appendChild(li);
             });
             const playersCount = document.getElementById('player-list').childElementCount;
@@ -349,6 +372,7 @@
         function showResults(data) {
             questionDisplay.style.display = 'none';
             resultsDisplay.style.display = 'block';
+            roundEndSound.play();
             document.getElementById('correct-answer').textContent = data.correct_answer;
             document.getElementById('answer-explanation').textContent = data.explanation;
             const playerAnswersList = document.getElementById('player-answers');
@@ -356,24 +380,35 @@
             Object.entries(data.player_answers).forEach(([player, answer]) => {
                 const li = document.createElement('li');
                 li.className = 'list-group-item';
-                if (data.correct_players.includes(player)) li.className += ' list-group-item-success';
+                if (data.correct_players.includes(player)) {
+                    li.classList.add('correct-answer');
+                    if (player === username) correctSound.play();
+                } else if (answer) {
+                    li.classList.add('incorrect-answer');
+                }
                 if (player === username) li.className += ' fw-bold';
-                li.innerHTML = `<span>${player}:</span> <span>${answer || 'No answer submitted'}</span>`;
+                li.innerHTML = `<span class="player-emoji">${data.player_emojis[player]}</span>${player}: <span>${answer || 'No answer submitted'}</span>`;
                 playerAnswersList.appendChild(li);
             });
             document.getElementById('next-player').textContent = data.next_player;
-            updateScoreboard(data.scores);
+            updateScoreboard(data.scores, data.player_emojis);
             startNextRoundCountdown(data.next_player);
         }
 
-        function updateScoreboard(scores) {
+        function endGame(data) {
+            questionDisplay.style.display = 'none';
+            resultsDisplay.style.display = 'none';
+            window.location.href = `/final_scoreboard/${gameId}`;
+        }
+
+        function updateScoreboard(scores, player_emojis) {
             const scoresTableBody = document.getElementById('scores-table-body');
             scoresTableBody.innerHTML = '';
             const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
             sortedScores.forEach(([player, score]) => {
                 const tr = document.createElement('tr');
                 if (player === username) tr.className = 'table-primary';
-                tr.innerHTML = `<td>${player}</td><td>${score}</td>`;
+                tr.innerHTML = `<td><span class="player-emoji">${player_emojis[player]}</span>${player}</td><td>${score}</td>`;
                 scoresTableBody.appendChild(tr);
             });
         }
