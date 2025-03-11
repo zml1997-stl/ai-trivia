@@ -231,6 +231,65 @@
                 console.error('Server error:', data.message);
                 alert(`Game error: ${data.message}`);
             });
+
+            // New event handlers for disconnection and reconnection
+            socket.on('player_rejoined', function(data) {
+                console.log(`${data.username} rejoined the game`);
+                updatePlayerList(data.players, data.player_emojis);
+                updateScoreboard(data.scores, data.player_emojis);
+                if (data.status === 'in_progress') {
+                    waitingLobby.style.display = 'none';
+                    scoreboard.style.display = 'block';
+                    leaveGameContainer.style.display = 'block';
+                    if (data.current_player === username) {
+                        topicSelection.style.display = 'block';
+                    } else if (!data.current_question) {
+                        const waitingDiv = document.createElement('div');
+                        waitingDiv.id = 'waiting-for-topic';
+                        waitingDiv.className = 'text-center my-5';
+                        waitingDiv.innerHTML = `<h3>Waiting for ${data.current_player} to select a topic...</h3><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>`;
+                        document.querySelector('.card-body').appendChild(waitingDiv);
+                    } else {
+                        showQuestion({
+                            question: data.current_question.question,
+                            options: data.current_question.options,
+                            topic: data.current_question.topic || 'Unknown'
+                        });
+                    }
+                }
+            });
+
+            socket.on('turn_skipped', function(data) {
+                console.log(`${data.disconnected_player}'s turn was skipped`);
+                const waitingEl = document.getElementById('waiting-for-topic');
+                if (waitingEl) waitingEl.remove();
+                if (data.next_player === username) {
+                    topicSelection.style.display = 'block';
+                    document.getElementById('topic-input').value = '';
+                } else {
+                    const waitingDiv = document.createElement('div');
+                    waitingDiv.id = 'waiting-for-topic';
+                    waitingDiv.className = 'text-center my-5';
+                    waitingDiv.innerHTML = `<h3>Waiting for ${data.next_player} to select a topic...</h3><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>`;
+                    document.querySelector('.card-body').appendChild(waitingDiv);
+                }
+            });
+
+            socket.on('game_paused', function(data) {
+                console.log('Game paused:', data.message);
+                questionDisplay.style.display = 'none';
+                resultsDisplay.style.display = 'none';
+                const pausedDiv = document.createElement('div');
+                pausedDiv.id = 'game-paused';
+                pausedDiv.className = 'text-center my-5';
+                pausedDiv.innerHTML = `<h3>Game Paused</h3><p>${data.message}</p><p>Waiting for players to reconnect...</p>`;
+                document.querySelector('.card-body').appendChild(pausedDiv);
+            });
+
+            socket.on('player_disconnected', function(data) {
+                console.log(`${data.username} disconnected`);
+                updatePlayerList(document.getElementById('player-list').children.map(li => li.textContent.split(' ')[1]), player_emojis);
+            });
         }
 
         function setupEventListeners() {
@@ -321,6 +380,8 @@
         }
 
         function startGame(data) {
+            const waitingEl = document.getElementById('waiting-for-topic');
+            if (waitingEl) waitingEl.remove();
             waitingLobby.style.display = 'none';
             scoreboard.style.display = 'block';
             leaveGameContainer.style.display = 'block';
@@ -343,6 +404,8 @@
             if (loadingEl) loadingEl.remove();
             const waitingEl = document.getElementById('waiting-for-topic');
             if (waitingEl) waitingEl.remove();
+            const pausedEl = document.getElementById('game-paused');
+            if (pausedEl) pausedEl.remove();
             questionDisplay.style.display = 'block';
             document.getElementById('topic-display').textContent = data.topic;
             document.getElementById('question-text').textContent = data.question;
