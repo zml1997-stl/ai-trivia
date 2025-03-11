@@ -229,7 +229,7 @@ def get_trivia_question(topic):
     - The answer must be accurate and verifiable.
     - Provide four multiple-choice options: one correct answer and three plausible but incorrect distractors.
     - Do not repeat or hint at the answer within the question.
-    - Ensure the question is broad enough that an average person might reasonably know or guess it.
+    - Ensure the question is broad enough that an average person might reasonably know or guess it if it is super specific.
     - Keep the question modern and widely recognizable unless the topic requires historical context. 
     - Return your response strictly in the following JSON format, with no additional text outside the JSON:
         {{
