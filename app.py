@@ -225,6 +225,7 @@ def get_trivia_question(topic):
     - Provide four multiple-choice options: one correct answer and three plausible but incorrect distractors. At least one of these should be very plausible. 
     - Do not repeat, hint at, or include any part of the answer within the question. The wording should not make the correct answer obvious.
     - Ensure the question is broad enough that an average person might reasonably know or guess it if it is super specific.
+    - Ensure the "{topic}" is not the answer to the question. 
     - The wording should feel natural and match the style of a well-crafted trivia question.
     - Keep the question modern and widely recognizable unless the topic requires historical context or are super specific topics. 
     - Return your response strictly in the following JSON format, with no additional text outside the JSON:
