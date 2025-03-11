@@ -1,8 +1,17 @@
 // static/music.js
 document.addEventListener("DOMContentLoaded", function() {
+    // Playlist array
+    const playlist = [
+        '/static/music.mp3',
+        '/static/music1.mp3',
+        '/static/music2.mp3',
+        '/static/music3.mp3'
+    ];
+    let currentTrackIndex = parseInt(sessionStorage.getItem("musicTrackIndex")) || 0;
+
     // Initialize audio element
-    const audioElement = new Audio('/static/music.mp3');
-    audioElement.loop = true;
+    const audioElement = new Audio(playlist[currentTrackIndex]);
+    audioElement.loop = false; // Disable loop since we have a playlist
 
     // DOM elements
     const musicControlBtn = document.getElementById("music-control-btn");
@@ -48,11 +57,15 @@ document.addEventListener("DOMContentLoaded", function() {
         sessionStorage.setItem("musicIsPlaying", "false");
     });
 
-    // Skip (loop back to start)
+    // Skip to next track
     skipBtn.addEventListener("click", function() {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        audioElement.src = playlist[currentTrackIndex];
         audioElement.currentTime = 0;
         audioElement.play();
+        sessionStorage.setItem("musicTrackIndex", currentTrackIndex);
         sessionStorage.setItem("musicIsPlaying", "true");
+        sessionStorage.setItem("musicCurrentTime", "0");
         muteBtn.classList.remove("btn-muted");
         audioElement.muted = false;
         sessionStorage.setItem("musicIsMuted", "false");
@@ -65,9 +78,20 @@ document.addEventListener("DOMContentLoaded", function() {
         muteBtn.classList.toggle("btn-muted", audioElement.muted);
     });
 
-    // Save current time periodically and on pause
+    // Save current time periodically
     audioElement.addEventListener("timeupdate", function() {
         sessionStorage.setItem("musicCurrentTime", audioElement.currentTime);
+    });
+
+    // Automatically skip to next track when current one ends
+    audioElement.addEventListener("ended", function() {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        audioElement.src = playlist[currentTrackIndex];
+        audioElement.currentTime = 0;
+        audioElement.play();
+        sessionStorage.setItem("musicTrackIndex", currentTrackIndex);
+        sessionStorage.setItem("musicIsPlaying", "true");
+        sessionStorage.setItem("musicCurrentTime", "0");
     });
 
     // Unmute and attempt play on first user interaction
@@ -87,5 +111,6 @@ document.addEventListener("DOMContentLoaded", function() {
         sessionStorage.setItem("musicIsPlaying", !audioElement.paused);
         sessionStorage.setItem("musicCurrentTime", audioElement.currentTime);
         sessionStorage.setItem("musicIsMuted", audioElement.muted);
+        sessionStorage.setItem("musicTrackIndex", currentTrackIndex);
     });
 });
