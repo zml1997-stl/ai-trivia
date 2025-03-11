@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TriviaTribeAI</title>
+    <title>Trivia Tribe by ZML</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
@@ -14,13 +14,16 @@
     <audio id="round-end-sound" src="{{ url_for('static', filename='round_end.mp3') }}" preload="auto"></audio>
 </head>
 <body>
+    <header class="brand-header">
+        Trivia Tribe by <span>ZML</span>
+    </header>
     <div class="container">
         <div class="row justify-content-center mt-3">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h2 class="mb-0">TriviaTribeAI</h2>
+                            <h2 class="mb-0">Trivia Tribe by ZML</h2>
                             <div>
                                 <span class="badge bg-info">Game ID: <span id="game-id-display">{{ game_id }}</span></span>
                             </div>
@@ -159,15 +162,15 @@
     <footer class="footer mt-auto py-4 bg-dark text-white custom-footer">
         <div class="container">
             <div class="row">
-                <div class="col-12 col-md-6">
-                    <span class="text-white-50">© 2025 TriviaTribeAI by ZML. All rights reserved.</span>
-                </div>
-            </div>
-            <div class="row mt-2">
                 <div class="col-12">
                     <p class="text-white-50 small disclaimer custom-disclaimer">
-                        <strong>AI Disclaimer:</strong> TriviaTribeAI utilizes AI to generate random trivia questions. While we strive for accuracy, some questions or answers may be incorrect or unverified. This game is intended for entertainment purposes only. For factual accuracy, consult reliable sources.
+                        <strong>AI Disclaimer:</strong> Trivia Tribe by ZML utilizes AI to generate random trivia questions. While we strive for accuracy, some questions or answers may be incorrect or unverified. This game is intended for entertainment purposes only. For factual accuracy, consult reliable sources.
                     </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <span class="text-white-50">© 2025 Trivia Tribe by ZML. All rights reserved.</span>
                 </div>
             </div>
         </div>
@@ -200,12 +203,10 @@
             const storedGameId = localStorage.getItem('gameId');
             const storedUsername = localStorage.getItem('username');
             if (storedGameId && storedUsername && storedGameId === gameId && storedUsername === username) {
-                // Returning player, proceed with socket connection
                 connectToSocket();
                 setupEventListeners();
                 window.switchToHomeMusic();
             } else {
-                // New session, store values
                 localStorage.setItem('gameId', gameId);
                 localStorage.setItem('username', username);
                 connectToSocket();
@@ -223,7 +224,7 @@
 
             socket.on('connect', function() {
                 console.log('Connected to server');
-                reconnectAttempts = 0; // Reset attempts on successful connect
+                reconnectAttempts = 0;
                 socket.emit('join_game_room', { game_id: gameId, username: username });
             });
 
@@ -238,7 +239,7 @@
 
             socket.on('reconnect', function(attempt) {
                 console.log(`Reconnected after ${attempt} attempts`);
-                socket.emit('join_game_room', { game_id: gameId, username: username }); // Rejoin room
+                socket.emit('join_game_room', { game_id: gameId, username: username });
             });
 
             socket.on('reconnect_failed', function() {
@@ -262,7 +263,6 @@
                 alert(`Game error: ${data.message}`);
             });
 
-            // Event handlers for disconnection and reconnection
             socket.on('player_rejoined', function(data) {
                 console.log(`${data.username} rejoined the game`);
                 updatePlayerList(data.players, data.player_emojis);
@@ -381,7 +381,7 @@
                 window.location.href = '/';
             });
             document.getElementById('mute-btn').addEventListener('click', function() {
-                window.muteToggle(); // Handled by music.js
+                window.muteToggle();
             });
         }
 
@@ -418,10 +418,10 @@
             scoreboard.style.display = 'block';
             leaveGameContainer.style.display = 'block';
             updateScoreboard(data.scores, data.player_emojis);
-            window.switchToGameMusic(); // Switch to game music
+            window.switchToGameMusic();
             if (data.current_player === username) {
                 topicSelection.style.display = 'block';
-                document.getElementById('topic-input').value = ''; // Clear input field
+                document.getElementById('topic-input').value = '';
             } else {
                 const waitingDiv = document.createElement('div');
                 waitingDiv.id = 'waiting-for-topic';
@@ -507,7 +507,7 @@
                     if (player === username) window.playCorrectSound();
                 } else if (answer) {
                     li.classList.add('incorrect-answer');
-                    if (player === username) window.playWrongSound(); // Play wrong sound for current user
+                    if (player === username) window.playWrongSound();
                 }
                 if (player === username) li.className += ' fw-bold';
                 li.innerHTML = `<span class="player-emoji">${data.player_emojis[player]}</span>${player}: <span>${answer || 'No answer submitted'}</span>`;
@@ -549,7 +549,7 @@
                 resultsDisplay.style.display = 'none';
                 if (nextPlayer === username) {
                     topicSelection.style.display = 'block';
-                    document.getElementById('topic-input').value = ''; // Clear input field
+                    document.getElementById('topic-input').value = '';
                 } else {
                     const waitingDiv = document.createElement('div');
                     waitingDiv.id = 'waiting-for-topic';
@@ -566,9 +566,9 @@
             scoreboard.style.display = 'none';
             leaveGameContainer.style.display = 'none';
             waitingLobby.style.display = 'block';
-            window.switchToHomeMusic(); // Switch back to lobby music
+            window.switchToHomeMusic();
             updatePlayerList(data.players, data.player_emojis);
-            updateScoreboard(data.scores, data.player_emojis); // Update with reset scores (all 0)
+            updateScoreboard(data.scores, data.player_emojis);
         }
     </script>
 </body>
