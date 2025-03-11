@@ -13,10 +13,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const selectSound = new Audio('/static/select.mp3');
     const submitSound = new Audio('/static/submit.mp3');
     const correctSound = new Audio('/static/correct.mp3');
+    const wrongSound = new Audio('/static/wrong.mp3');  // New wrong sound
     const roundEndSound = new Audio('/static/round_end.mp3');
     selectSound.volume = 0.5;
     submitSound.volume = 0.5;
     correctSound.volume = 0.5;
+    wrongSound.volume = 0.5;  // Set volume for wrong sound
     roundEndSound.volume = 0.5;
 
     // DOM elements
@@ -86,5 +88,6 @@ document.addEventListener("DOMContentLoaded", function() {
     window.playSelectSound = function() { selectSound.play(); };
     window.playSubmitSound = function() { submitSound.play(); };
     window.playCorrectSound = function() { correctSound.play(); };
+    window.playWrongSound = function() { wrongSound.play(); };  // Expose wrong sound
     window.playRoundEndSound = function() { roundEndSound.play(); };
 });
