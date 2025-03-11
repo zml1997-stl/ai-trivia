@@ -331,3 +331,6 @@ p, .form-label {
 #final-scoreboard .btn {
     margin: 0.5rem;
 }
+
+/* Optional: Add custom styling for the disclaimer if needed */
+/* .disclaimer { font-size: 0.75rem; color: #6c757d; text-align: center; } */
