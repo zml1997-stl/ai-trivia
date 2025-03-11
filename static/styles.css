@@ -213,3 +213,86 @@ p, .form-label {
     font-size: 0.9rem;
     padding: 0.25rem 0.5rem;
 }
+
+/* Add to the end of styles.css */
+
+/* Music Control Button */
+.music-control-btn {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.music-control-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Music Player Popup */
+.music-player {
+    position: fixed;
+    bottom: 60px;
+    right: 15px;
+    width: 200px;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    display: none;
+}
+
+.music-player.active {
+    display: block;
+}
+
+.music-player .btn {
+    padding: 0.5rem;
+    font-size: 1rem;
+    width: 45px;
+    margin: 0.25rem;
+    background-color: #007bff;
+}
+
+.music-player .btn:hover {
+    background-color: #0056b3;
+}
+
+.music-player .btn-muted {
+    background-color: #6c757d;
+}
+
+.music-player .btn-muted:hover {
+    background-color: #5a6268;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 576px) {
+    .music-control-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+    .music-player {
+        width: 180px;
+        padding: 0.75rem;
+    }
+    .music-player .btn {
+        width: 40px;
+        padding: 0.4rem;
+        font-size: 0.9rem;
+    }
+}
