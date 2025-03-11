@@ -222,7 +222,7 @@ def get_trivia_question(topic):
     Requirements:
     - The question should be engaging, specific, and of average difficulty, similar to a standard trivia game.
     - The answer must be accurate and verifiable.
-    - Provide four multiple-choice options: one correct answer and three plausible but incorrect distractors.
+    - Provide four multiple-choice options: one correct answer and three plausible but incorrect distractors. At least one of these should very plausible. 
     - Do not repeat or hint at the answer within the question.
     - Ensure the question is broad enough that an average person might reasonably know or guess it if it is super specific.
     - Keep the question modern and widely recognizable unless the topic requires historical context. 
