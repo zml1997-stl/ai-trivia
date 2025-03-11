@@ -10,6 +10,7 @@
     <audio id="select-sound" src="{{ url_for('static', filename='select.mp3') }}" preload="auto"></audio>
     <audio id="submit-sound" src="{{ url_for('static', filename='submit.mp3') }}" preload="auto"></audio>
     <audio id="correct-sound" src="{{ url_for('static', filename='correct.mp3') }}" preload="auto"></audio>
+    <audio id="wrong-sound" src="{{ url_for('static', filename='wrong.mp3') }}" preload="auto"></audio>
     <audio id="round-end-sound" src="{{ url_for('static', filename='round_end.mp3') }}" preload="auto"></audio>
 </head>
 <body>
@@ -411,6 +412,7 @@
                     if (player === username) window.playCorrectSound();
                 } else if (answer) {
                     li.classList.add('incorrect-answer');
+                    if (player === username) window.playWrongSound(); // Play wrong sound for current user
                 }
                 if (player === username) li.className += ' fw-bold';
                 li.innerHTML = `<span class="player-emoji">${data.player_emojis[player]}</span>${player}: <span>${answer || 'No answer submitted'}</span>`;
