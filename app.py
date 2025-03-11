@@ -151,20 +151,27 @@ def join_game():
     if game_id not in games:
         return "Game not found", 404
     
+    # Allow rejoining only if the player was already in the game
+    if username in games[game_id]['players']:
+        session['game_id'] = game_id
+        session['username'] = username
+        return redirect(url_for('game', game_id=game_id))
+    
+    # Block new players if game is in progress or full
     if games[game_id]['status'] != 'waiting':
         return "Game already in progress", 403
     
     if len(games[game_id]['players']) >= 10:
         return "Game is full", 403
     
-    if username not in games[game_id]['players']:
-        games[game_id]['players'].append(username)
-        games[game_id]['scores'][username] = 0
-        available_emojis = [e for e in PLAYER_EMOJIS if e not in games[game_id]['player_emojis'].values()]
-        if available_emojis:
-            games[game_id]['player_emojis'][username] = random.choice(available_emojis)
-        else:
-            games[game_id]['player_emojis'][username] = random.choice(PLAYER_EMOJIS)
+    # Add new player during waiting phase
+    games[game_id]['players'].append(username)
+    games[game_id]['scores'][username] = 0
+    available_emojis = [e for e in PLAYER_EMOJIS if e not in games[game_id]['player_emojis'].values()]
+    if available_emojis:
+        games[game_id]['player_emojis'][username] = random.choice(available_emojis)
+    else:
+        games[game_id]['player_emojis'][username] = random.choice(PLAYER_EMOJIS)
     
     session['game_id'] = game_id
     session['username'] = username
@@ -387,7 +394,7 @@ def question_timer(game_id):
                 games[game_id]['answers'][player] = None
         
         correct_answer = games[game_id]['current_question']['answer']
-        correct_players = [p for p, a in games[game_id]['answers'].items() if a == correct_answer]
+        `correct_players = [p for p, a in games[game_id]['answers'].items() if a == correct_answer]
         for p in correct_players:
             games[game_id]['scores'][p] += 1
         
