@@ -18,7 +18,7 @@ body {
 }
 
 .brand-header img {
-    max-width: 300px;
+    max-width: 150px;
     height: auto;
     filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5)); /* Neon cyan glow */
 }
@@ -357,7 +357,7 @@ p, .form-label {
 }
 
 .correct-answer {
-    background-color: rgba(255, 105, 180, 0.2);
+    background-color: rgba(183, 244, 216, 0.2);
 }
 
 .incorrect-answer {
