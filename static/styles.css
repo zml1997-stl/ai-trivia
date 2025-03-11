@@ -18,14 +18,14 @@ body {
 }
 
 .brand-header img {
-    max-width: 300px; /* Adjust size as needed */
+    max-width: 150px; /* Adjust size as needed */
     height: auto;
     filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5)); /* Neon cyan glow */
 }
 
 /* Card base styling */
 .card, .welcome-card, .play-card {
-    background-color: #333344; /* Dark grey */
+    background-color: #F2F3F5; /* Dark grey */
     border-radius: 10px;
     padding: 1.5rem;
     margin: 1rem auto;
@@ -53,7 +53,7 @@ h1 {
 }
 
 h2, h3 {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     color: #E0E0E0; /* Light grey */
     margin-bottom: 0.75rem;
     text-align: center;
