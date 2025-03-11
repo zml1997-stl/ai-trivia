@@ -29,10 +29,10 @@
                                     </tr>
                                 </thead>
                                 <tbody id="scores-table-body">
-                                    {% for player, score in scores.items()|sort(reverse=True, key=lambda x: x[1]) %}
+                                    {% for player in scores|dictsort(by='value', reverse=True) %}
                                         <tr>
-                                            <td><span class="player-emoji">{{ player_emojis[player] }}</span>{{ player }}</td>
-                                            <td>{{ score }}</td>
+                                            <td><span class="player-emoji">{{ player_emojis[player[0]] }}</span>{{ player[0] }}</td>
+                                            <td>{{ player[1] }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -40,7 +40,7 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                            <a href="{{ url_for('game', game_id=game_id) }}" class="btn btn-success btn-lg">Start New Game</a>
+                            <button id="start-new-game-btn" class="btn btn-success btn-lg">Start New Game</button>
                             <a href="{{ url_for('welcome') }}" class="btn btn-secondary btn-lg">Return to Start</a>
                         </div>
                     </div>
@@ -57,6 +57,21 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             window.switchToGameMusic(); // Play game music on final scoreboard
+
+            document.getElementById('start-new-game-btn').addEventListener('click', function() {
+                fetch('/reset_game/{{ game_id }}', { method: 'POST' })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.href = '/game/{{ game_id }}';
+                        } else {
+                            alert('Failed to reset game. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error resetting game:', error);
+                        alert('Error resetting game. Please try again.');
+                    });
+            });
         });
     </script>
 </body>
