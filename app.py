@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
 import os
 import uuid
 import google.generativeai as genai
@@ -7,7 +7,7 @@ import secrets
 import json
 import random
 import re
-import string  # Added missing import
+import string
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from datetime import datetime, timedelta
 import logging
@@ -187,6 +187,30 @@ def final_scoreboard(game_id):
     if game_id not in games:
         return redirect(url_for('welcome'))
     return render_template('final_scoreboard.html', game_id=game_id, scores=games[game_id]['scores'], player_emojis=games[game_id]['player_emojis'])
+
+@app.route('/reset_game/<game_id>', methods=['POST'])
+def reset_game(game_id):
+    if game_id not in games:
+        return jsonify({'error': 'Game not found'}), 404
+    
+    # Reset scores and game state
+    game = games[game_id]
+    game['status'] = 'waiting'
+    game['current_player_index'] = 0
+    game['current_question'] = None
+    game['answers'] = {}
+    game['scores'] = {player: 0 for player in game['players']}
+    game['question_start_time'] = None
+    game['questions_asked'] = []  # Reset asked questions to allow fresh topics
+    
+    logger.debug(f"Game {game_id} reset by request")
+    socketio.emit('game_reset', {
+        'players': game['players'],
+        'scores': game['scores'],
+        'player_emojis': game['player_emojis']
+    }, to=game_id)
+    
+    return Response(status=200)
 
 def get_trivia_question(topic):
     try:
