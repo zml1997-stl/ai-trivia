@@ -9,6 +9,11 @@ import random
 import re
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from datetime import datetime, timedelta
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # List of random trivia topics
 RANDOM_TOPICS = [
@@ -95,7 +100,7 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
 
 # Game state storage
 games = {}
@@ -176,6 +181,12 @@ def game(game_id):
     
     return render_template('game.html', game_id=game_id, username=username, is_host=(username == games[game_id]['host']))
 
+@app.route('/final_scoreboard/<game_id>')
+def final_scoreboard(game_id):
+    if game_id not in games:
+        return redirect(url_for('welcome'))
+    return render_template('final_scoreboard.html', game_id=game_id, scores=games[game_id]['scores'], player_emojis=games[game_id]['player_emojis'])
+
 def get_trivia_question(topic):
     try:
         model = genai.GenerativeModel('gemini-2.0-flash')
@@ -203,8 +214,7 @@ def get_trivia_question(topic):
             result = json.loads(cleaned_text)
             return result
         except json.JSONDecodeError as e:
-            print(f"JSONDecodeError: {e}")
-            print(f"Raw response text: {response.text}")
+            logger.error(f"JSONDecodeError: {e} - Raw response text: {response.text}")
             return {
                 "question": f"What is a notable fact about {topic}?",
                 "answer": "Unable to generate answer",
@@ -213,7 +223,7 @@ def get_trivia_question(topic):
             }
 
     except Exception as e:
-        print(f"Error generating question: {str(e)}")
+        logger.error(f"Error generating question: {str(e)}")
         return {
             "question": f"What is a notable fact about {topic}?",
             "answer": "Unable to generate answer",
@@ -221,15 +231,9 @@ def get_trivia_question(topic):
             "explanation": "There was an error with the AI service (General Exception)."
         }
 
-@app.route('/final_scoreboard/<game_id>')
-def final_scoreboard(game_id):
-    if game_id not in games:
-        return redirect(url_for('welcome'))
-    return render_template('final_scoreboard.html', game_id=game_id, scores=games[game_id]['scores'], player_emojis=games[game_id]['player_emojis'])
-
 @socketio.on('connect')
 def handle_connect():
-    print("Client connected")
+    logger.debug("Client connected")
 
 @socketio.on('join_game_room')
 def handle_join_game_room(data):
@@ -239,6 +243,7 @@ def handle_join_game_room(data):
     if game_id in games and username in games[game_id]['players']:
         games[game_id].setdefault('disconnected', set()).discard(username)
         join_room(game_id)
+        logger.debug(f"Player {username} joined room {game_id}")
         emit('player_joined', {'username': username, 'players': games[game_id]['players'], 'player_emojis': games[game_id]['player_emojis']}, to=game_id)
 
 @socketio.on('start_game')
@@ -246,16 +251,23 @@ def handle_start_game(data):
     game_id = data.get('game_id')
     username = data.get('username')
     
-    if game_id in games and username == games[game_id]['host'] and games[game_id]['status'] == 'waiting':
-        games[game_id]['status'] = 'in_progress'
-        current_player = games[game_id]['players'][games[game_id]['current_player_index']]
-        
-        emit('game_started', {
-            'current_player': current_player,
-            'players': games[game_id]['players'],
-            'scores': games[game_id]['scores'],
-            'player_emojis': games[game_id]['player_emojis']
-        }, to=game_id)
+    try:
+        if game_id in games and username == games[game_id]['host'] and games[game_id]['status'] == 'waiting':
+            games[game_id]['status'] = 'in_progress'
+            current_player = games[game_id]['players'][games[game_id]['current_player_index']]
+            logger.debug(f"Game {game_id} started by host {username}, current player: {current_player}")
+            
+            emit('game_started', {
+                'current_player': current_player,
+                'players': games[game_id]['players'],
+                'scores': games[game_id]['scores'],
+                'player_emojis': games[game_id]['player_emojis']
+            }, to=game_id)
+        else:
+            logger.warning(f"Invalid start game request for game {game_id} by {username}")
+    except Exception as e:
+        logger.error(f"Error starting game {game_id}: {str(e)}")
+        emit('error', {'message': 'Failed to start game. Please try again.'}, to=game_id)
 
 @socketio.on('select_topic')
 def handle_select_topic(data):
