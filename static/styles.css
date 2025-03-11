@@ -1,7 +1,7 @@
 /* Mobile-first global styles */
 body {
-    background-color: #e6f0fa; /* Soft teal-blue background */
-    color: #333;
+    background: linear-gradient(135deg, #F5E8C7 0%, #EADDB5 100%); /* Warm beige gradient */
+    color: #4A3C31; /* Deep taupe for text */
     min-height: 100vh;
     padding: 0;
     margin: 0;
@@ -11,11 +11,11 @@ body {
 
 /* Card base styling */
 .card, .welcome-card, .play-card {
-    background-color: #ffffff;
+    background-color: #FFFFFF; /* Pure white for contrast */
     border-radius: 10px;
     padding: 1.5rem;
     margin: 1rem auto;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(138, 111, 71, 0.2); /* Warm gray shadow */
     max-width: 100%;
     width: 100%;
 }
@@ -23,7 +23,7 @@ body {
 .card-header {
     border-bottom: none;
     font-size: 1.2rem; /* Reduced from 1.25rem */
-    color: #006666; /* Dark teal for headers */
+    color: #8A6F47; /* Warm gray for headers */
     font-weight: 600;
     margin-bottom: 0.75rem;
 }
@@ -31,21 +31,21 @@ body {
 h1 {
     font-size: 1.5rem; /* Reduced from 1.75rem */
     font-weight: 700;
-    color: #006666; /* Dark teal */
+    color: #8A6F47; /* Warm gray */
     margin-bottom: 0.75rem;
     text-align: center;
 }
 
 h2, h3 {
     font-size: 1.1rem; /* Reduced from 1.25rem */
-    color: #333;
+    color: #4A3C31; /* Deep taupe */
     margin-bottom: 0.75rem;
     text-align: center;
 }
 
 p, .form-label {
     font-size: 0.95rem; /* Slightly reduced from 1rem */
-    color: #555;
+    color: #5E4D3D; /* Muted brown for body text */
 }
 
 .form-label {
@@ -56,12 +56,12 @@ p, .form-label {
 
 /* Buttons */
 .btn-primary, .btn-success, .animated-btn {
-    background-color: #ff7f50; /* Coral accent */
+    background-color: #D77A61; /* Muted coral accent */
     border: none;
     padding: 0.75rem 1.5rem;
     font-size: 0.95rem; /* Reduced from 1rem */
     font-weight: 600;
-    color: #fff;
+    color: #FFFFFF; /* White text for contrast */
     border-radius: 5px;
     width: 100%;
     margin-bottom: 0.5rem;
@@ -69,45 +69,46 @@ p, .form-label {
 }
 
 .btn-primary:hover, .btn-success:hover, .animated-btn:hover {
-    background-color: #e07d5e; /* Darker coral on hover */
+    background-color: #C6634D; /* Darker muted coral on hover */
 }
 
 .btn-success {
-    background-color: #28a745; /* Keep green for success */
+    background-color: #A68A64; /* Warm olive green for success */
 }
 
 .btn-success:hover {
-    background-color: #218838;
+    background-color: #8F7755;
 }
 
 .btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
+    background-color: #8A6F47; /* Warm gray */
+    border-color: #8A6F47;
 }
 
 .btn-secondary:hover {
-    background-color: #5a6268;
+    background-color: #725D3A;
 }
 
 /* Progress Bars */
 .progress {
     height: 10px;
     border-radius: 5px;
-    background-color: #e9ecef;
+    background-color: #EADDB5; /* Light warm beige */
     margin-bottom: 1rem;
 }
 
 .progress-bar {
     transition: width 0.5s ease-in-out;
+    background-color: #D77A61; /* Muted coral */
 }
 
 /* List Group Items (for answer options) */
 .list-group-item {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
-    background-color: #f8f9fa;
-    color: #333;
-    border: 1px solid #ddd;
+    background-color: #F9F1E0; /* Very light warm beige */
+    color: #4A3C31;
+    border: 1px solid #EADDB5;
     padding: 1rem;
     margin-bottom: 0.5rem;
     font-size: 0.95rem; /* Reduced from 1rem */
@@ -115,18 +116,18 @@ p, .form-label {
 }
 
 .list-group-item.active {
-    background-color: #add8e6; /* Light blue for selected answer */
-    border-color: #add8e6;
+    background-color: #D7C4A7; /* Soft warm gray for selected answer */
+    border-color: #D7C4A7;
 }
 
 .list-group-item:hover:not(.active) {
-    background-color: #e9ecef;
+    background-color: #EADDB5;
 }
 
 .list-group-item.disabled {
     cursor: not-allowed;
-    background-color: #e9ecef;
-    color: #6c757d;
+    background-color: #EADDB5;
+    color: #8A6F47;
     opacity: 0.65;
 }
 
@@ -140,11 +141,11 @@ p, .form-label {
 #scoreboard th,
 #scoreboard td {
     padding: 0.75rem;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid #EADDB5;
 }
 
 .table-primary {
-    background-color: rgba(0, 102, 102, 0.1); /* Light teal for current player */
+    background-color: rgba(138, 111, 71, 0.1); /* Light warm gray for current player */
 }
 
 /* Responsive Adjustments */
@@ -175,13 +176,13 @@ p, .form-label {
 /* Specific Adjustments */
 #correct-answer {
     font-weight: bold;
-    color: #28a745;
+    color: #A68A64; /* Warm olive green */
     font-size: 1.1rem; /* Reduced from 1.25rem */
     text-align: center;
 }
 
 #answer-explanation {
-    color: #6c757d;
+    color: #8A6F47; /* Warm gray */
     font-style: italic;
     text-align: center;
 }
@@ -190,7 +191,7 @@ p, .form-label {
     text-align: center;
     padding: 1rem;
     border-radius: 5px;
-    background-color: #e9ecef;
+    background-color: #F9F1E0;
     margin-bottom: 1rem;
 }
 
@@ -198,7 +199,7 @@ p, .form-label {
     margin-top: 1rem;
     padding: 1rem;
     border-radius: 5px;
-    background-color: #e9ecef;
+    background-color: #F9F1E0;
     text-align: center;
 }
 
@@ -211,6 +212,8 @@ p, .form-label {
 .badge {
     font-size: 0.9rem;
     padding: 0.25rem 0.5rem;
+    background-color: #D77A61; /* Muted coral */
+    color: #FFFFFF;
 }
 
 /* Music Control Button */
@@ -220,22 +223,22 @@ p, .form-label {
     right: 15px;
     width: 40px;
     height: 40px;
-    background-color: #ff7f50; /* Coral */
+    background-color: #D77A61; /* Muted coral */
     border: none;
     border-radius: 50%;
-    color: #fff;
+    color: #FFFFFF;
     font-size: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px rgba(138, 111, 71, 0.2);
     z-index: 1000;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
 .music-control-btn:hover {
-    background-color: #e07d5e; /* Darker coral on hover */
+    background-color: #C6634D; /* Darker muted coral on hover */
 }
 
 /* Music Player Popup */
@@ -244,10 +247,10 @@ p, .form-label {
     bottom: 60px;
     right: 15px;
     width: 200px;
-    background-color: #fff;
+    background-color: #FFFFFF;
     border-radius: 10px;
     padding: 1rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(138, 111, 71, 0.2);
     z-index: 1001;
     display: none;
 }
@@ -261,19 +264,19 @@ p, .form-label {
     font-size: 1rem;
     width: 45px;
     margin: 0.25rem;
-    background-color: #ff7f50; /* Coral */
+    background-color: #D77A61; /* Muted coral */
 }
 
 .music-player .btn:hover {
-    background-color: #e07d5e; /* Darker coral */
+    background-color: #C6634D; /* Darker muted coral */
 }
 
 .music-player .btn-muted {
-    background-color: #6c757d;
+    background-color: #8A6F47; /* Warm gray */
 }
 
 .music-player .btn-muted:hover {
-    background-color: #5a6268;
+    background-color: #725D3A;
 }
 
 /* Mobile Adjustments */
@@ -298,17 +301,17 @@ p, .form-label {
 
 /* Highlight selected answer */
 .list-group-item.active {
-    background-color: #add8e6; /* Light blue */
-    border-color: #add8e6;
+    background-color: #D7C4A7; /* Soft warm gray */
+    border-color: #D7C4A7;
 }
 
 /* Highlight correct and incorrect answers in results */
 .correct-answer {
-    background-color: #90ee90; /* Light green */
+    background-color: #D7E4D1; /* Light warm green */
 }
 
 .incorrect-answer {
-    background-color: #ffcccb; /* Light red */
+    background-color: #F1D4D4; /* Light warm red */
 }
 
 /* Player emoji styling */
@@ -323,7 +326,7 @@ p, .form-label {
 }
 
 #final-scoreboard h2 {
-    color: #28a745; /* Green for "Game Over" */
+    color: #A68A64; /* Warm olive green */
     font-size: 1.8rem; /* Adjusted for balance */
     margin-bottom: 1rem;
 }
@@ -332,5 +335,40 @@ p, .form-label {
     margin: 0.5rem;
 }
 
-/* Optional: Add custom styling for the disclaimer if needed */
-/* .disclaimer { font-size: 0.75rem; color: #6c757d; text-align: center; } */
+/* Custom Footer Styling */
+.custom-footer {
+    background-color: #4A3C31; /* Deep taupe */
+    color: #F5E8C7; /* Warm beige */
+    padding: 1.5rem 0;
+    border-top: 2px solid #D77A61; /* Muted coral border */
+    font-size: 0.9rem;
+}
+
+.custom-footer .text-white-50 {
+    color: rgba(245, 232, 199, 0.5); /* Subtle warm beige */
+}
+
+.custom-footer a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.custom-footer a:hover {
+    color: #D77A61; /* Muted coral hover */
+    text-decoration: underline;
+}
+
+/* Custom Disclaimer Styling */
+.custom-disclaimer {
+    background-color: rgba(215, 122, 97, 0.1); /* Very light muted coral */
+    padding: 0.75rem;
+    border-left: 4px solid #D77A61; /* Muted coral */
+    border-radius: 5px;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.custom-disclaimer strong {
+    color: #D77A61; /* Muted coral */
+}
