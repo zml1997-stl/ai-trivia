@@ -13,12 +13,6 @@
         <source src="{{ url_for('static', filename='music.mp3') }}" type="audio/mpeg">
     </audio>
 
-    <!-- Play/Pause Buttons -->
-    <div class="text-center mb-3">
-        <button id="playButton" class="btn btn-primary">Play Music</button>
-        <button id="pauseButton" class="btn btn-secondary">Pause Music</button>
-    </div>
-
     <div class="container">
         <div class="row justify-content-center mt-3">
             <div class="col-12">
@@ -131,7 +125,7 @@
                             </div>
                         </div>
                         
-                        <!-- Scoreboard (always visible once game starts) -->
+                        <!-- Scoreboard -->
                         <div id="scoreboard" class="mt-4" style="display: none;">
                             <h4>Scoreboard</h4>
                             <table class="table table-striped">
@@ -157,6 +151,19 @@
         <button id="leave-game-btn" class="btn btn-danger btn-lg">Leave Game</button>
     </div>
 
+    <!-- Music Control Button -->
+    <button id="music-control-btn" class="music-control-btn">🎵</button>
+
+    <!-- Music Player Popup -->
+    <div id="music-player" class="music-player">
+        <div class="d-flex justify-content-between">
+            <button id="play-btn" class="btn btn-primary">▶️</button>
+            <button id="pause-btn" class="btn btn-primary">⏸️</button>
+            <button id="skip-btn" class="btn btn-primary">⏭️</button>
+            <button id="mute-btn" class="btn btn-primary">🔇</button>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const gameId = "{{ game_id }}";
@@ -179,6 +186,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             connectToSocket();
             setupEventListeners();
+            setupMusicControls();
         });
 
         function connectToSocket() {
@@ -241,6 +249,53 @@
             document.getElementById('leave-game-btn').addEventListener('click', function() {
                 window.location.href = '/';
             });
+        }
+
+        function setupMusicControls() {
+            const audioElement = new Audio('{{ url_for("static", filename="music.mp3") }}');
+            audioElement.loop = true;
+
+            const musicControlBtn = document.getElementById("music-control-btn");
+            const musicPlayer = document.getElementById("music-player");
+            const playBtn = document.getElementById("play-btn");
+            const pauseBtn = document.getElementById("pause-btn");
+            const skipBtn = document.getElementById("skip-btn");
+            const muteBtn = document.getElementById("mute-btn");
+
+            musicControlBtn.addEventListener("click", function() {
+                musicPlayer.classList.toggle("active");
+            });
+
+            playBtn.addEventListener("click", function() {
+                audioElement.play();
+                muteBtn.classList.remove("btn-muted");
+                audioElement.muted = false;
+            });
+
+            pauseBtn.addEventListener("click", function() {
+                audioElement.pause();
+            });
+
+            skipBtn.addEventListener("click", function() {
+                audioElement.currentTime = 0;
+                audioElement.play();
+                muteBtn.classList.remove("btn-muted");
+                audioElement.muted = false;
+            });
+
+            muteBtn.addEventListener("click", function() {
+                audioElement.muted = !audioElement.muted;
+                muteBtn.classList.toggle("btn-muted", audioElement.muted);
+            });
+
+            document.addEventListener("click", function() {
+                if (audioElement.muted) {
+                    audioElement.muted = false;
+                    audioElement.play().catch(() => console.log("Autoplay blocked."));
+                }
+            }, { once: true });
+
+            audioElement.play().catch(() => console.log("Autoplay blocked."));
         }
 
         function selectAnswer(answer) {
@@ -394,28 +449,6 @@
                 }
             }, 10000);
         }
-    </script>
-    <script>
-        document.addEventListener("click", function() {
-            document.getElementById("background-music").muted = false;
-        }, { once: true });
-    </script>
-    <script>
-        const audioElement = new Audio('{{ url_for("static", filename="music.mp3") }}');
-        document.addEventListener("DOMContentLoaded", function() {
-            const playButton = document.getElementById("playButton");
-            const pauseButton = document.getElementById("pauseButton");
-            playButton.addEventListener("click", function() {
-                audioElement.muted = false;
-                audioElement.play();
-            });
-            pauseButton.addEventListener("click", function() {
-                audioElement.pause();
-            });
-            audioElement.play().catch(() => {
-                console.log("Autoplay blocked. User interaction required.");
-            });
-        });
     </script>
 </body>
 </html>
