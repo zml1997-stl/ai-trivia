@@ -197,6 +197,7 @@
             socket.on('random_topic_selected', function(data) {
                 document.getElementById('topic-input').value = data.topic;
             });
+            socket.on('game_reset', function(data) { resetGame(data); });
         }
 
         function setupEventListeners() {
@@ -256,7 +257,7 @@
                 window.location.href = '/';
             });
             document.getElementById('mute-btn').addEventListener('click', function() {
-                window.muteToggle(); // Assuming music.js exposes this, but handled directly there
+                window.muteToggle(); // Handled by music.js
             });
         }
 
@@ -426,6 +427,17 @@
                     document.querySelector('.card-body').appendChild(waitingDiv);
                 }
             }, 10000);
+        }
+
+        function resetGame(data) {
+            questionDisplay.style.display = 'none';
+            resultsDisplay.style.display = 'none';
+            scoreboard.style.display = 'none';
+            leaveGameContainer.style.display = 'none';
+            waitingLobby.style.display = 'block';
+            window.switchToHomeMusic(); // Switch back to lobby music
+            updatePlayerList(data.players, data.player_emojis);
+            updateScoreboard(data.scores, data.player_emojis); // Update with reset scores (all 0)
         }
     </script>
 </body>
