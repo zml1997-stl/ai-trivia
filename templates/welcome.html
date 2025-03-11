@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to TriviaTribeAI</title>
+    <title>Welcome to Trivia Tribe by ZML</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <header class="brand-header">
+        Trivia Tribe by <span>ZML</span>
+    </header>
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-12">
                 <div class="welcome-card">
-                    <h1>Welcome to TriviaTribeAI!</h1>
+                    <h1>Welcome to Trivia Tribe by ZML!</h1>
                     <p>
-                        Get ready for a fun trivia challenge! TriviaTribeAI is a multiplayer experience where you can create or join a game, pick exciting topics, and test your knowledge with friends. Powered by AI, each round features unique questions, multiple-choice options, a 30-second timer, and a live scoreboard. Enjoy topics like history, pop culture, science, and more. Share a Game ID with friends and start playing!
+                        Get ready for a fun trivia challenge! Trivia Tribe by ZML is a multiplayer experience where you can create or join a game, pick exciting topics, and test your knowledge with friends. Powered by AI, each round features unique questions, multiple-choice options, a 30-second timer, and a live scoreboard. Enjoy topics like history, pop culture, science, and more. Share a Game ID with friends and start playing!
                     </p>
                     <a href="{{ url_for('play') }}" class="animated-btn">Start Playing Now</a>
                 </div>
@@ -35,20 +38,19 @@
         </div>
     </div>
 
-    <!-- Footer with Disclaimer -->
     <!-- Footer with Customized Disclaimer -->
     <footer class="footer mt-auto py-4 bg-dark text-white custom-footer">
         <div class="container">
             <div class="row">
-                <div class="col-12 col-md-6">
-                    <span class="text-white-50">© 2025 TriviaTribeAI by ZML. All rights reserved.</span>
-                </div>
-            </div>
-            <div class="row mt-2">
                 <div class="col-12">
                     <p class="text-white-50 small disclaimer custom-disclaimer">
-                        <strong>AI Disclaimer:</strong> TriviaTribeAI utilizes AI to generate random trivia questions. While we strive for accuracy, some questions or answers may be incorrect or unverified. This game is intended for entertainment purposes only. For factual accuracy, consult reliable sources.
+                        <strong>AI Disclaimer:</strong> Trivia Tribe by ZML utilizes AI to generate random trivia questions. While we strive for accuracy, some questions or answers may be incorrect or unverified. This game is intended for entertainment purposes only. For factual accuracy, consult reliable sources.
                     </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <span class="text-white-50">© 2025 Trivia Tribe by ZML. All rights reserved.</span>
                 </div>
             </div>
         </div>
@@ -58,7 +60,7 @@
     <script src="{{ url_for('static', filename='music.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            window.switchToHomeMusic(); // Play home music (music2.mp3) on welcome page
+            window.switchToHomeMusic();
         });
     </script>
 </body>
