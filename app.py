@@ -222,10 +222,11 @@ def get_trivia_question(topic):
     Requirements:
     - The question should be engaging, specific, and of average difficulty, similar to a standard trivia game.
     - The answer must be accurate and verifiable.
-    - Provide four multiple-choice options: one correct answer and three plausible but incorrect distractors. At least one of these should very plausible. 
-    - Do not repeat or hint at the answer within the question. No part of the question should be the same or include word(s) that are in the answer. 
+    - Provide four multiple-choice options: one correct answer and three plausible but incorrect distractors. At least one of these should be very plausible. 
+    - Do not repeat, hint at, or include any part of the answer within the question. The wording should not make the correct answer obvious.
     - Ensure the question is broad enough that an average person might reasonably know or guess it if it is super specific.
-    - Keep the question modern and widely recognizable unless the topic requires historical context. 
+    - The wording should feel natural and match the style of a well-crafted trivia question.
+    - Keep the question modern and widely recognizable unless the topic requires historical context or are super specific topics. 
     - Return your response strictly in the following JSON format, with no additional text outside the JSON:
         {{
             "question": "The trivia question",
