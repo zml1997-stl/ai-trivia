@@ -18,7 +18,7 @@ body {
 }
 
 .brand-header img {
-    max-width: 150px;
+    max-width: 300px;
     height: auto;
     filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5)); /* Neon cyan glow */
 }
@@ -209,12 +209,16 @@ p, .form-label {
 
 /* Specific Adjustments */
 #topic-display {
-    font-size: 1.2rem; /* Larger font size */
-    padding: 0.5rem 1rem;
-    background-color: #FF69B4; /* Neon pink background */
-    color: #2C1A3B; /* Dark purple for contrast */
+    font-size: 1rem; /* Reduced from 1.2rem for better fit */
+    padding: 0.4rem 0.8rem;
+    background-color: #FF69B4; /* Neon pink */
+    color: #2C1A3B; /* Dark purple */
     border-radius: 5px;
     text-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
+    max-width: 100%; /* Ensure it stays within container */
+    word-wrap: break-word; /* Allow text wrapping */
+    display: inline-block; /* Prevent overflow */
+    margin-bottom: 0.5rem; /* Space before question text */
 }
 
 #correct-answer {
@@ -340,8 +344,8 @@ p, .form-label {
         font-size: 0.9rem;
     }
     #topic-display {
-        font-size: 1rem; /* Slightly smaller on mobile */
-        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem; /* Smaller on mobile */
+        padding: 0.3rem 0.6rem;
     }
 }
 
@@ -405,4 +409,11 @@ p, .form-label {
 
 .custom-disclaimer strong {
     color: #FF69B4;
+}
+
+/* Fix for Player Answers Header */
+.card-header.bg-light {
+    background-color: #4B2E5A !important; /* Dark purple to match theme */
+    color: #F5F5F5 !important; /* Off-white for readability */
+    border-bottom: 1px solid #FF69B4; /* Neon pink border */
 }
