@@ -222,19 +222,22 @@ def get_trivia_question(topic):
     try:
         model = genai.GenerativeModel('gemini-2.0-flash')
         prompt = f"""
-        Create a trivia question about {topic}. 
-        The question must be engaging, specific, and have a single, clear, unambiguous answer. 
-        Return your response strictly in the following JSON format, with no additional text outside the JSON:
+    Generate a well-structured trivia question about "{topic}" with a single, clear, and unambiguous answer.
+    
+    Requirements:
+    - The question should be engaging, specific, and of average difficulty, similar to a standard trivia game.
+    - The answer must be accurate and verifiable.
+    - Provide four multiple-choice options: one correct answer and three plausible but incorrect distractors.
+    - Do not repeat or hint at the answer within the question.
+    - Ensure the question is broad enough that an average person might reasonably know or guess it.
+    - Keep the question modern and widely recognizable unless the topic requires historical context. 
+    - Return your response strictly in the following JSON format, with no additional text outside the JSON:
         {{
             "question": "The trivia question",
             "answer": "The correct answer",
             "options": ["Option A", "Option B", "Option C", "Option D"],
             "explanation": "A concise explanation of why the answer is correct"
         }}
-        Ensure the options include one correct answer and three plausible but incorrect distractors.
-        Do not include any part of the answer in the question.
-        Tailor the difficulty to a general audience unless otherwise specified. Try to keep questions modern,
-        and something that most people would know unless the topic is specifically related to pre-modern topics.
         """
         response = model.generate_content(prompt)
         try:
