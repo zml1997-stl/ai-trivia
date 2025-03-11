@@ -131,7 +131,8 @@ def create_game():
         'answers': {},
         'scores': {username: 0},
         'question_start_time': None,
-        'player_emojis': {username: random.choice(PLAYER_EMOJIS)}  # Assign random emoji to host
+        'player_emojis': {username: random.choice(PLAYER_EMOJIS)},
+        'questions_asked': []
     }
     
     session['game_id'] = game_id
@@ -159,12 +160,11 @@ def join_game():
     if username not in games[game_id]['players']:
         games[game_id]['players'].append(username)
         games[game_id]['scores'][username] = 0
-        # Assign a unique emoji not already used in this game
         available_emojis = [e for e in PLAYER_EMOJIS if e not in games[game_id]['player_emojis'].values()]
         if available_emojis:
             games[game_id]['player_emojis'][username] = random.choice(available_emojis)
         else:
-            games[game_id]['player_emojis'][username] = random.choice(PLAYER_EMOJIS)  # Fallback if no unique emoji available
+            games[game_id]['player_emojis'][username] = random.choice(PLAYER_EMOJIS)
     
     session['game_id'] = game_id
     session['username'] = username
@@ -193,7 +193,6 @@ def reset_game(game_id):
     if game_id not in games:
         return jsonify({'error': 'Game not found'}), 404
     
-    # Reset scores and game state
     game = games[game_id]
     game['status'] = 'waiting'
     game['current_player_index'] = 0
@@ -201,7 +200,7 @@ def reset_game(game_id):
     game['answers'] = {}
     game['scores'] = {player: 0 for player in game['players']}
     game['question_start_time'] = None
-    game['questions_asked'] = []  # Reset asked questions to allow fresh topics
+    game['questions_asked'] = []
     
     logger.debug(f"Game {game_id} reset by request")
     socketio.emit('game_reset', {
@@ -215,7 +214,6 @@ def reset_game(game_id):
 def get_trivia_question(topic):
     try:
         model = genai.GenerativeModel('gemini-2.0-flash')
-
         prompt = f"""
         Create a trivia question about {topic}. 
         The question must be engaging, specific, and have a single, clear, unambiguous answer. 
@@ -231,9 +229,7 @@ def get_trivia_question(topic):
         Tailor the difficulty to a general audience unless otherwise specified. Try to keep questions modern,
         and something that most people would know unless the topic is specifically related to pre-modern topics.
         """
-
         response = model.generate_content(prompt)
-
         try:
             cleaned_text = response.text.replace('`json', '').replace('`', '').strip()
             result = json.loads(cleaned_text)
@@ -246,7 +242,6 @@ def get_trivia_question(topic):
                 "options": ["Option A", "Option B", "Option C", "Option D"],
                 "explanation": "There was an error parsing the AI response (JSONDecodeError)."
             }
-
     except Exception as e:
         logger.error(f"Error generating question: {str(e)}")
         return {
@@ -255,6 +250,21 @@ def get_trivia_question(topic):
             "options": ["Option A", "Option B", "Option C", "Option D"],
             "explanation": "There was an error with the AI service (General Exception)."
         }
+
+# Helper function to get the next active player
+def get_next_active_player(game_id):
+    game = games[game_id]
+    current_index = game['current_player_index']
+    players = game['players']
+    num_players = len(players)
+    
+    for _ in range(num_players):
+        current_index = (current_index + 1) % num_players
+        next_player = players[current_index]
+        if next_player not in game['disconnected']:
+            game['current_player_index'] = current_index
+            return next_player
+    return None
 
 @socketio.on('connect')
 def handle_connect():
@@ -265,11 +275,33 @@ def handle_join_game_room(data):
     game_id = data.get('game_id')
     username = data.get('username')
     
-    if game_id in games and username in games[game_id]['players']:
-        games[game_id].setdefault('disconnected', set()).discard(username)
-        join_room(game_id)
-        logger.debug(f"Player {username} joined room {game_id}")
-        emit('player_joined', {'username': username, 'players': games[game_id]['players'], 'player_emojis': games[game_id]['player_emojis']}, to=game_id)
+    if game_id in games:
+        if username in games[game_id]['players']:
+            # Player is reconnecting
+            games[game_id]['disconnected'].discard(username)
+            join_room(game_id)
+            logger.debug(f"Player {username} rejoined room {game_id}")
+            emit('player_rejoined', {
+                'username': username,
+                'players': games[game_id]['players'],
+                'scores': games[game_id]['scores'],
+                'player_emojis': games[game_id]['player_emojis'],
+                'status': games[game_id]['status'],
+                'current_player': games[game_id]['players'][games[game_id]['current_player_index']] if games[game_id]['status'] == 'in_progress' else None,
+                'current_question': games[game_id]['current_question'] if games[game_id]['status'] == 'in_progress' else None
+            }, to=game_id)
+        elif games[game_id]['status'] == 'waiting' and len(games[game_id]['players']) < 10:
+            # New player joining in waiting phase
+            games[game_id]['players'].append(username)
+            games[game_id]['scores'][username] = 0
+            available_emojis = [e for e in PLAYER_EMOJIS if e not in games[game_id]['player_emojis'].values()]
+            games[game_id]['player_emojis'][username] = random.choice(available_emojis) if available_emojis else random.choice(PLAYER_EMOJIS)
+            join_room(game_id)
+            emit('player_joined', {
+                'username': username,
+                'players': games[game_id]['players'],
+                'player_emojis': games[game_id]['player_emojis']
+            }, to=game_id)
 
 @socketio.on('start_game')
 def handle_start_game(data):
@@ -280,6 +312,8 @@ def handle_start_game(data):
         if game_id in games and username == games[game_id]['host'] and games[game_id]['status'] == 'waiting':
             games[game_id]['status'] = 'in_progress'
             current_player = games[game_id]['players'][games[game_id]['current_player_index']]
+            if current_player in games[game_id]['disconnected']:
+                current_player = get_next_active_player(game_id)
             logger.debug(f"Game {game_id} started by host {username}, current player: {current_player}")
             
             emit('game_started', {
@@ -309,7 +343,6 @@ def handle_select_topic(data):
             games[game_id]['questions_asked'] = []
 
         max_attempts = 10
-
         for _ in range(max_attempts):
             if not topic:
                 topic = random.choice(RANDOM_TOPICS)
@@ -336,9 +369,50 @@ def handle_select_topic(data):
                     'options': question_data['options'],
                     'topic': topic
                 }, to=game_id)
+                socketio.start_background_task(question_timer, game_id)
                 return
 
         emit('error', {'message': "Couldn't generate a unique question. Try another topic."}, to=game_id)
+
+def question_timer(game_id):
+    import time
+    time.sleep(30)  # 30-second timeout
+    if game_id in games and games[game_id]['status'] == 'in_progress':
+        active_players = [p for p in games[game_id]['players'] if p not in games[game_id]['disconnected']]
+        for player in active_players:
+            if player not in games[game_id]['answers']:
+                games[game_id]['answers'][player] = None
+        for player in games[game_id]['disconnected']:
+            if player in games[game_id]['players']:
+                games[game_id]['answers'][player] = None
+        
+        correct_answer = games[game_id]['current_question']['answer']
+        correct_players = [p for p, a in games[game_id]['answers'].items() if a == correct_answer]
+        for p in correct_players:
+            games[game_id]['scores'][p] += 1
+        
+        max_score = max(games[game_id]['scores'].values())
+        if max_score >= 10:
+            emit('game_ended', {
+                'scores': games[game_id]['scores'],
+                'player_emojis': games[game_id]['player_emojis']
+            }, to=game_id)
+            return
+        
+        next_player = get_next_active_player(game_id)
+        if next_player:
+            games[game_id]['current_player_index'] = games[game_id]['players'].index(next_player)
+            emit('round_results', {
+                'correct_answer': correct_answer,
+                'explanation': games[game_id]['current_question']['explanation'],
+                'player_answers': games[game_id]['answers'],
+                'correct_players': correct_players,
+                'next_player': next_player,
+                'scores': games[game_id]['scores'],
+                'player_emojis': games[game_id]['player_emojis']
+            }, to=game_id)
+        else:
+            emit('game_paused', {'message': 'No active players remaining'}, to=game_id)
 
 @socketio.on('submit_answer')
 def handle_submit_answer(data):
@@ -362,7 +436,8 @@ def handle_submit_answer(data):
         games[game_id]['answers'][username] = answer
         emit('player_answered', {'username': username}, to=game_id)
         
-        if len(games[game_id]['answers']) == len(games[game_id]['players']):
+        active_players = [p for p in games[game_id]['players'] if p not in games[game_id]['disconnected']]
+        if len(games[game_id]['answers']) == len(active_players):
             correct_answer = games[game_id]['current_question']['answer']
             correct_players = []
             
@@ -371,7 +446,6 @@ def handle_submit_answer(data):
                     correct_players.append(player)
                     games[game_id]['scores'][player] += 1
             
-            # Check for game end condition (first player to 10 points)
             max_score = max(games[game_id]['scores'].values())
             if max_score >= 10:
                 emit('game_ended', {
@@ -380,27 +454,37 @@ def handle_submit_answer(data):
                 }, to=game_id)
                 return
 
-            # Update to the next player's turn
-            games[game_id]['current_player_index'] = (games[game_id]['current_player_index'] + 1) % len(games[game_id]['players'])
-            next_player = games[game_id]['players'][games[game_id]['current_player_index']]
-            
-            emit('round_results', {
-                'correct_answer': correct_answer,
-                'explanation': games[game_id]['current_question']['explanation'],
-                'player_answers': games[game_id]['answers'],
-                'correct_players': correct_players,
-                'next_player': next_player,
-                'scores': games[game_id]['scores'],
-                'player_emojis': games[game_id]['player_emojis']
-            }, to=game_id)
+            next_player = get_next_active_player(game_id)
+            if next_player:
+                games[game_id]['current_player_index'] = games[game_id]['players'].index(next_player)
+                emit('round_results', {
+                    'correct_answer': correct_answer,
+                    'explanation': games[game_id]['current_question']['explanation'],
+                    'player_answers': games[game_id]['answers'],
+                    'correct_players': correct_players,
+                    'next_player': next_player,
+                    'scores': games[game_id]['scores'],
+                    'player_emojis': games[game_id]['player_emojis']
+                }, to=game_id)
+            else:
+                emit('game_paused', {'message': 'No active players remaining'}, to=game_id)
 
 @socketio.on('disconnect')
 def handle_disconnect():
     username = session.get('username')
     for game_id, game in games.items():
         if username in game['players']:
-            game.setdefault('disconnected', set()).add(username)
+            game['disconnected'].add(username)
             emit('player_disconnected', {'username': username}, to=game_id)
+            if (game['status'] == 'in_progress' and 
+                game['players'][game['current_player_index']] == username):
+                next_player = get_next_active_player(game_id)
+                if next_player:
+                    game['current_player_index'] = game['players'].index(next_player)
+                    emit('turn_skipped', {
+                        'disconnected_player': username,
+                        'next_player': next_player
+                    }, to=game_id)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
