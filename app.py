@@ -215,7 +215,7 @@ def reset_game(game_id):
 
 def get_trivia_question(topic):
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash-thinking-exp-01-21')
         prompt = f"""
     Generate a well-structured trivia question about "{topic}" with a single, clear, and unambiguous answer.
     
