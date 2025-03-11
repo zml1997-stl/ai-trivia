@@ -308,7 +308,7 @@ def handle_select_topic(data):
         if 'questions_asked' not in games[game_id]:
             games[game_id]['questions_asked'] = []
 
-        max_attempts = 5
+        max_attempts = 10
 
         for _ in range(max_attempts):
             if not topic:
@@ -373,7 +373,7 @@ def handle_submit_answer(data):
             
             # Check for game end condition (first player to 10 points)
             max_score = max(games[game_id]['scores'].values())
-            if max_score >= 10:
+            if max_score >= 4:
                 emit('game_ended', {
                     'scores': games[game_id]['scores'],
                     'player_emojis': games[game_id]['player_emojis']
