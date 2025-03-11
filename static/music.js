@@ -1,4 +1,3 @@
-// static/music.js
 document.addEventListener("DOMContentLoaded", function() {
     // Playlist array
     const playlist = [
@@ -9,9 +8,20 @@ document.addEventListener("DOMContentLoaded", function() {
     ];
     let currentTrackIndex = parseInt(sessionStorage.getItem("musicTrackIndex")) || 0;
 
-    // Initialize audio element
+    // Initialize audio elements
     const audioElement = new Audio(playlist[currentTrackIndex]);
     audioElement.loop = false; // Disable loop since we have a playlist
+    audioElement.volume = 0.3; // Lower background music volume to avoid overpowering effects
+
+    // Sound effects
+    const selectSound = new Audio('/static/select.mp3');
+    const submitSound = new Audio('/static/submit.mp3');
+    const correctSound = new Audio('/static/correct.mp3');
+    const roundEndSound = new Audio('/static/round_end.mp3');
+    selectSound.volume = 0.5;
+    submitSound.volume = 0.5;
+    correctSound.volume = 0.5;
+    roundEndSound.volume = 0.5;
 
     // DOM elements
     const musicControlBtn = document.getElementById("music-control-btn");
@@ -42,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
         musicPlayer.classList.toggle("active");
     });
 
-    // Play audio
+    // Play background music
     playBtn.addEventListener("click", function() {
         audioElement.play();
         sessionStorage.setItem("musicIsPlaying", "true");
@@ -51,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
         sessionStorage.setItem("musicIsMuted", "false");
     });
 
-    // Pause audio
+    // Pause background music
     pauseBtn.addEventListener("click", function() {
         audioElement.pause();
         sessionStorage.setItem("musicIsPlaying", "false");
@@ -71,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function() {
         sessionStorage.setItem("musicIsMuted", "false");
     });
 
-    // Mute/Unmute toggle
+    // Mute/Unmute toggle for background music
     muteBtn.addEventListener("click", function() {
         audioElement.muted = !audioElement.muted;
         sessionStorage.setItem("musicIsMuted", audioElement.muted);
@@ -113,4 +123,10 @@ document.addEventListener("DOMContentLoaded", function() {
         sessionStorage.setItem("musicIsMuted", audioElement.muted);
         sessionStorage.setItem("musicTrackIndex", currentTrackIndex);
     });
+
+    // Expose sound effects for use by game.html
+    window.playSelectSound = function() { selectSound.play(); };
+    window.playSubmitSound = function() { submitSound.play(); };
+    window.playCorrectSound = function() { correctSound.play(); };
+    window.playRoundEndSound = function() { roundEndSound.play(); };
 });
