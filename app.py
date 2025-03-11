@@ -394,7 +394,7 @@ def question_timer(game_id):
                 games[game_id]['answers'][player] = None
         
         correct_answer = games[game_id]['current_question']['answer']
-        `correct_players = [p for p, a in games[game_id]['answers'].items() if a == correct_answer]
+        correct_players = [p for p, a in games[game_id]['answers'].items() if a == correct_answer]
         for p in correct_players:
             games[game_id]['scores'][p] += 1
         
