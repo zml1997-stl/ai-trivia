@@ -1,7 +1,7 @@
 /* Mobile-first global styles */
 body {
     background: linear-gradient(135deg, #2C1A3B 0%, #4B2E5A 100%); /* Dark purple-blue gradient */
-    color: #E0E0E0; /* Light grey */
+    color: #F5F5F5; /* Brighter off-white */
     min-height: 100vh;
     padding: 0;
     margin: 0;
@@ -18,18 +18,18 @@ body {
 }
 
 .brand-header img {
-    max-width: 150px; /* Adjust size as needed */
+    max-width: 300px;
     height: auto;
     filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5)); /* Neon cyan glow */
 }
 
 /* Card base styling */
 .card, .welcome-card, .play-card {
-    background-color: #F2F3F5; /* Dark grey */
+    background-color: #5A3F73; /* Medium purple */
     border-radius: 10px;
     padding: 1.5rem;
     margin: 1rem auto;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); /* Neon cyan glow */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); /* Subtler neon cyan glow */
     max-width: 100%;
     width: 100%;
     border: 1px solid #FF69B4; /* Neon pink border */
@@ -49,19 +49,19 @@ h1 {
     color: #FF69B4; /* Neon pink */
     margin-bottom: 0.75rem;
     text-align: center;
-    text-shadow: 0 0 5px rgba(255, 105, 180, 0.5); /* Neon pink glow */
+    text-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
 }
 
 h2, h3 {
-    font-size: 1.3rem;
-    color: #E0E0E0; /* Light grey */
+    font-size: 1.1rem;
+    color: #F5F5F5;
     margin-bottom: 0.75rem;
     text-align: center;
 }
 
 p, .form-label {
     font-size: 0.95rem;
-    color: #E0E0E0;
+    color: #F5F5F5;
 }
 
 .form-label {
@@ -72,26 +72,26 @@ p, .form-label {
 
 /* Buttons */
 .btn-primary, .btn-success, .animated-btn {
-    background-color: #00FFFF; /* Neon cyan */
+    background-color: #00FFFF;
     border: none;
     padding: 0.75rem 1.5rem;
     font-size: 0.95rem;
     font-weight: 600;
-    color: #2C1A3B; /* Dark purple for contrast */
+    color: #2C1A3B;
     border-radius: 5px;
     width: 100%;
     margin-bottom: 0.5rem;
     transition: background-color 0.2s ease;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); /* Neon cyan glow */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 .btn-primary:hover, .btn-success:hover, .animated-btn:hover {
-    background-color: #00CCCC; /* Darker cyan */
+    background-color: #00CCCC;
 }
 
 .btn-success {
-    background-color: #FF69B4; /* Neon pink */
-    box-shadow: 0 0 10px rgba(255, 105, 180, 0.5); /* Neon pink glow */
+    background-color: #FF69B4;
+    box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
 }
 
 .btn-success:hover {
@@ -99,7 +99,7 @@ p, .form-label {
 }
 
 .btn-secondary {
-    background-color: #FF69B4; /* Neon pink */
+    background-color: #FF69B4;
     border-color: #FF69B4;
 }
 
@@ -111,13 +111,13 @@ p, .form-label {
 .progress {
     height: 10px;
     border-radius: 5px;
-    background-color: #4B2E5A; /* Dark purple */
+    background-color: #4B2E5A;
     margin-bottom: 1rem;
 }
 
 .progress-bar {
     transition: width 0.5s ease-in-out;
-    background-color: #00FFFF; /* Neon cyan */
+    background-color: #00FFFF;
     box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
 }
 
@@ -125,9 +125,9 @@ p, .form-label {
 .list-group-item {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
-    background-color: #333344; /* Dark grey */
-    color: #E0E0E0;
-    border: 1px solid #FF69B4; /* Neon pink border */
+    background-color: #5A3F73; /* Medium purple */
+    color: #F5F5F5;
+    border: 1px solid #FF69B4;
     padding: 1rem;
     margin-bottom: 0.5rem;
     font-size: 0.95rem;
@@ -139,7 +139,7 @@ p, .form-label {
     content: attr(data-prefix);
     font-weight: bold;
     margin-right: 0.5rem;
-    color: #00FFFF; /* Neon cyan */
+    color: #00FFFF;
 }
 
 .list-group-item span {
@@ -147,20 +147,20 @@ p, .form-label {
 }
 
 .list-group-item.active {
-    background-color: #4B2E5A; /* Dark purple */
-    border: 2px solid #00FFFF; /* Neon cyan border */
-    color: #E0E0E0;
+    background-color: #4B2E5A;
+    border: 2px solid #00FFFF;
+    color: #F5F5F5;
     font-weight: 500;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); /* Neon cyan glow */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 .list-group-item:hover:not(.active) {
-    background-color: #3A2A4A; /* Slightly lighter purple */
+    background-color: #6A4F83; /* Slightly lighter purple */
 }
 
 .list-group-item.disabled {
     cursor: not-allowed;
-    background-color: #3A2A4A;
+    background-color: #6A4F83;
     color: #6B705C;
     opacity: 0.65;
 }
@@ -175,11 +175,11 @@ p, .form-label {
 #scoreboard th,
 #scoreboard td {
     padding: 0.75rem;
-    border-top: 1px solid #FF69B4; /* Neon pink */
+    border-top: 1px solid #FF69B4;
 }
 
 .table-primary {
-    background-color: rgba(255, 105, 180, 0.1); /* Light neon pink */
+    background-color: rgba(255, 105, 180, 0.1);
 }
 
 /* Responsive Adjustments */
@@ -208,16 +208,25 @@ p, .form-label {
 }
 
 /* Specific Adjustments */
+#topic-display {
+    font-size: 1.2rem; /* Larger font size */
+    padding: 0.5rem 1rem;
+    background-color: #FF69B4; /* Neon pink background */
+    color: #2C1A3B; /* Dark purple for contrast */
+    border-radius: 5px;
+    text-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
+}
+
 #correct-answer {
     font-weight: bold;
-    color: #FF69B4; /* Neon pink */
+    color: #FF69B4;
     font-size: 1.1rem;
     text-align: center;
     text-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
 }
 
 #answer-explanation {
-    color: #E0E0E0;
+    color: #F5F5F5;
     font-style: italic;
     text-align: center;
 }
@@ -226,7 +235,7 @@ p, .form-label {
     text-align: center;
     padding: 1rem;
     border-radius: 5px;
-    background-color: #333344; /* Dark grey */
+    background-color: #5A3F73;
     margin-bottom: 1rem;
 }
 
@@ -234,7 +243,7 @@ p, .form-label {
     margin-top: 1rem;
     padding: 1rem;
     border-radius: 5px;
-    background-color: #333344;
+    background-color: #5A3F73;
     text-align: center;
 }
 
@@ -247,8 +256,8 @@ p, .form-label {
 .badge {
     font-size: 0.9rem;
     padding: 0.25rem 0.5rem;
-    background-color: #FF69B4; /* Neon pink */
-    color: #2C1A3B; /* Dark purple */
+    background-color: #FF69B4;
+    color: #2C1A3B;
 }
 
 /* Music Control Button */
@@ -258,7 +267,7 @@ p, .form-label {
     right: 15px;
     width: 40px;
     height: 40px;
-    background-color: #00FFFF; /* Neon cyan */
+    background-color: #00FFFF;
     border: none;
     border-radius: 50%;
     color: #2C1A3B;
@@ -282,7 +291,7 @@ p, .form-label {
     bottom: 60px;
     right: 15px;
     width: 200px;
-    background-color: #333344;
+    background-color: #5A3F73;
     border-radius: 10px;
     padding: 1rem;
     box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
@@ -330,21 +339,25 @@ p, .form-label {
         padding: 0.4rem;
         font-size: 0.9rem;
     }
+    #topic-display {
+        font-size: 1rem; /* Slightly smaller on mobile */
+        padding: 0.4rem 0.8rem;
+    }
 }
 
 /* Additional Styles for AI Trivia Game */
 .list-group-item.active {
     background-color: #4B2E5A;
     border: 2px solid #00FFFF;
-    color: #E0E0E0;
+    color: #F5F5F5;
 }
 
 .correct-answer {
-    background-color: rgba(255, 105, 180, 0.2); /* Light neon pink */
+    background-color: rgba(255, 105, 180, 0.2);
 }
 
 .incorrect-answer {
-    background-color: rgba(255, 0, 0, 0.2); /* Light red */
+    background-color: rgba(255, 0, 0, 0.2);
 }
 
 .player-emoji {
@@ -368,20 +381,20 @@ p, .form-label {
 
 /* Custom Footer Styling */
 .custom-footer {
-    background-color: #1A1026; /* Deep purple */
-    color: #E0E0E0;
+    background-color: #1A1026;
+    color: #F5F5F5;
     padding: 1.5rem 0;
-    border-top: 2px solid #FF69B4; /* Neon pink */
+    border-top: 2px solid #FF69B4;
     font-size: 0.9rem;
 }
 
 .custom-footer .text-white-50 {
-    color: rgba(224, 224, 224, 0.5);
+    color: rgba(245, 245, 245, 0.5);
 }
 
 /* Custom Disclaimer Styling */
 .custom-disclaimer {
-    background-color: rgba(255, 105, 180, 0.1); /* Very light neon pink */
+    background-color: rgba(255, 105, 180, 0.1);
     padding: 0.75rem;
     border-left: 4px solid #FF69B4;
     border-radius: 5px;
