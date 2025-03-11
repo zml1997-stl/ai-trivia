@@ -14,7 +14,7 @@ body {
     text-align: center;
     padding: 1rem 0;
     background-color: #3A4F41; /* Deep forest green */
-    color: #F8F1E9; /* Off-white */
+    color: #E0E0E0; /* Light grey */
     font-size: 1.5rem;
     font-weight: 700;
 }
@@ -25,7 +25,7 @@ body {
 
 /* Card base styling */
 .card, .welcome-card, .play-card {
-    background-color: #F8F1E9; /* Off-white */
+    background-color: #E0E0E0; /* Light grey replacing off-white */
     border-radius: 10px;
     padding: 1.5rem;
     margin: 1rem auto;
@@ -75,7 +75,7 @@ p, .form-label {
     padding: 0.75rem 1.5rem;
     font-size: 0.95rem;
     font-weight: 600;
-    color: #F8F1E9; /* Off-white */
+    color: #E0E0E0; /* Light grey instead of white */
     border-radius: 5px;
     width: 100%;
     margin-bottom: 0.5rem;
@@ -107,7 +107,7 @@ p, .form-label {
 .progress {
     height: 10px;
     border-radius: 5px;
-    background-color: #C2D4C8; /* Light sage green */
+    background-color: #D3D3D3; /* Medium grey replacing sage green */
     margin-bottom: 1rem;
 }
 
@@ -116,31 +116,44 @@ p, .form-label {
     background-color: #A0522D; /* Burnt sienna */
 }
 
-/* List Group Items */
+/* List Group Items (Multiple Choice) */
 .list-group-item {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
-    background-color: #F8F1E9; /* Off-white */
+    background-color: #E0E0E0; /* Light grey */
     color: #2F2E33;
-    border: 1px solid #C2D4C8;
+    border: 1px solid #D3D3D3; /* Medium grey border */
     padding: 1rem;
     margin-bottom: 0.5rem;
     font-size: 0.95rem;
     text-align: left;
 }
 
+/* Bold the A, B, C, D characters */
+.list-group-item::before {
+    content: attr(data-prefix); /* Use data-prefix for A), B), etc. */
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+.list-group-item span {
+    font-weight: normal; /* Keep answer text regular */
+}
+
 .list-group-item.active {
-    background-color: #D9D5C9; /* Muted taupe */
-    border-color: #D9D5C9;
+    background-color: #A9A9A9; /* Darker grey for selected state */
+    border: 2px solid #A0522D; /* Burnt sienna border for emphasis */
+    color: #2F2E33; /* Dark charcoal text, not white */
+    font-weight: 500; /* Slightly bolder overall */
 }
 
 .list-group-item:hover:not(.active) {
-    background-color: #E8ECE6;
+    background-color: #D3D3D3; /* Medium grey on hover */
 }
 
 .list-group-item.disabled {
     cursor: not-allowed;
-    background-color: #E8ECE6;
+    background-color: #D3D3D3;
     color: #6B705C;
     opacity: 0.65;
 }
@@ -155,7 +168,7 @@ p, .form-label {
 #scoreboard th,
 #scoreboard td {
     padding: 0.75rem;
-    border-top: 1px solid #C2D4C8;
+    border-top: 1px solid #D3D3D3;
 }
 
 .table-primary {
@@ -205,7 +218,7 @@ p, .form-label {
     text-align: center;
     padding: 1rem;
     border-radius: 5px;
-    background-color: #F8F1E9;
+    background-color: #E0E0E0; /* Light grey */
     margin-bottom: 1rem;
 }
 
@@ -213,7 +226,7 @@ p, .form-label {
     margin-top: 1rem;
     padding: 1rem;
     border-radius: 5px;
-    background-color: #F8F1E9;
+    background-color: #E0E0E0; /* Light grey */
     text-align: center;
 }
 
@@ -227,7 +240,7 @@ p, .form-label {
     font-size: 0.9rem;
     padding: 0.25rem 0.5rem;
     background-color: #A0522D; /* Burnt sienna */
-    color: #F8F1E9;
+    color: #E0E0E0; /* Light grey */
 }
 
 /* Music Control Button */
@@ -240,7 +253,7 @@ p, .form-label {
     background-color: #A0522D; /* Burnt sienna */
     border: none;
     border-radius: 50%;
-    color: #F8F1E9;
+    color: #E0E0E0; /* Light grey */
     font-size: 1.25rem;
     display: flex;
     align-items: center;
@@ -261,7 +274,7 @@ p, .form-label {
     bottom: 60px;
     right: 15px;
     width: 200px;
-    background-color: #F8F1E9;
+    background-color: #E0E0E0; /* Light grey */
     border-radius: 10px;
     padding: 1rem;
     box-shadow: 0 4px 15px rgba(107, 112, 92, 0.2);
@@ -313,8 +326,9 @@ p, .form-label {
 
 /* Additional Styles for AI Trivia Game */
 .list-group-item.active {
-    background-color: #D9D5C9; /* Muted taupe */
-    border-color: #D9D5C9;
+    background-color: #A9A9A9; /* Darker grey */
+    border: 2px solid #A0522D; /* Burnt sienna border */
+    color: #2F2E33; /* Dark charcoal */
 }
 
 .correct-answer {
@@ -347,14 +361,14 @@ p, .form-label {
 /* Custom Footer Styling */
 .custom-footer {
     background-color: #3A4F41; /* Deep forest green */
-    color: #F8F1E9; /* Off-white */
+    color: #E0E0E0; /* Light grey */
     padding: 1.5rem 0;
     border-top: 2px solid #A0522D; /* Burnt sienna */
     font-size: 0.9rem;
 }
 
 .custom-footer .text-white-50 {
-    color: rgba(248, 241, 233, 0.5); /* Subtle off-white */
+    color: rgba(224, 224, 224, 0.5); /* Subtle light grey */
 }
 
 /* Custom Disclaimer Styling */
@@ -363,7 +377,7 @@ p, .form-label {
     padding: 0.75rem;
     border-left: 4px solid #A0522D; /* Burnt sienna */
     border-radius: 5px;
-    margin-bottom: 1rem; /* Space before copyright */
+    margin-bottom: 1rem;
     font-size: 0.85rem;
     line-height: 1.5;
 }
