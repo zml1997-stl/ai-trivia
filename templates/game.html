@@ -179,9 +179,21 @@
         const timerProgress = document.getElementById('timer-progress');
 
         document.addEventListener('DOMContentLoaded', function() {
-            connectToSocket();
-            setupEventListeners();
-            window.switchToHomeMusic(); // Start with home music in lobby
+            const storedGameId = localStorage.getItem('gameId');
+            const storedUsername = localStorage.getItem('username');
+            if (storedGameId && storedUsername && storedGameId === gameId && storedUsername === username) {
+                // Returning player, proceed with socket connection
+                connectToSocket();
+                setupEventListeners();
+                window.switchToHomeMusic();
+            } else {
+                // New session, store values
+                localStorage.setItem('gameId', gameId);
+                localStorage.setItem('username', username);
+                connectToSocket();
+                setupEventListeners();
+                window.switchToHomeMusic();
+            }
         });
 
         function connectToSocket() {
@@ -232,7 +244,7 @@
                 alert(`Game error: ${data.message}`);
             });
 
-            // New event handlers for disconnection and reconnection
+            // Event handlers for disconnection and reconnection
             socket.on('player_rejoined', function(data) {
                 console.log(`${data.username} rejoined the game`);
                 updatePlayerList(data.players, data.player_emojis);
@@ -346,6 +358,8 @@
                 }
             });
             document.getElementById('leave-game-btn').addEventListener('click', function() {
+                localStorage.removeItem('gameId');
+                localStorage.removeItem('username');
                 window.location.href = '/';
             });
             document.getElementById('mute-btn').addEventListener('click', function() {
@@ -489,6 +503,8 @@
         function endGame(data) {
             questionDisplay.style.display = 'none';
             resultsDisplay.style.display = 'none';
+            localStorage.removeItem('gameId');
+            localStorage.removeItem('username');
             window.location.href = `/final_scoreboard/${gameId}`;
         }
 
