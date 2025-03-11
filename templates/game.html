@@ -166,6 +166,8 @@
         let timeLeft = 30;
         let selectedAnswer = null;
         let player_emojis = {};
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
 
         const waitingLobby = document.getElementById('waiting-lobby');
         const topicSelection = document.getElementById('topic-selection');
@@ -182,11 +184,37 @@
         });
 
         function connectToSocket() {
-            socket = io();
+            socket = io({
+                reconnection: true,
+                reconnectionAttempts: maxReconnectAttempts,
+                reconnectionDelay: 1000
+            });
+
             socket.on('connect', function() {
                 console.log('Connected to server');
+                reconnectAttempts = 0; // Reset attempts on successful connect
                 socket.emit('join_game_room', { game_id: gameId, username: username });
             });
+
+            socket.on('connect_error', function(error) {
+                console.error('Connection error:', error);
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    console.log(`Reconnection attempt ${reconnectAttempts + 1} of ${maxReconnectAttempts}`);
+                } else {
+                    alert('Failed to connect to the game server after multiple attempts. Please refresh the page or try again later.');
+                }
+            });
+
+            socket.on('reconnect', function(attempt) {
+                console.log(`Reconnected after ${attempt} attempts`);
+                socket.emit('join_game_room', { game_id: gameId, username: username }); // Rejoin room
+            });
+
+            socket.on('reconnect_failed', function() {
+                console.error('Reconnection failed');
+                alert('Lost connection to the game server. Please refresh the page to try again.');
+            });
+
             socket.on('player_joined', function(data) { updatePlayerList(data.players, data.player_emojis); });
             socket.on('player_left', function(data) { updatePlayerList(data.players, data.player_emojis); });
             socket.on('game_started', function(data) { startGame(data); });
@@ -198,6 +226,10 @@
                 document.getElementById('topic-input').value = data.topic;
             });
             socket.on('game_reset', function(data) { resetGame(data); });
+            socket.on('error', function(data) {
+                console.error('Server error:', data.message);
+                alert(`Game error: ${data.message}`);
+            });
         }
 
         function setupEventListeners() {
