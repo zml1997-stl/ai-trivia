@@ -25,7 +25,7 @@ body {
 
 /* Card base styling */
 .card, .welcome-card, .play-card {
-    background-color: #E0E0E0; /* Light grey replacing off-white */
+    background-color: #F5F5F5; /* Light grey replacing off-white */
     border-radius: 10px;
     padding: 1.5rem;
     margin: 1rem auto;
